@@ -1,0 +1,37 @@
+# Replit configuration. Import from GitHub → add secrets → Run → Deploy.
+run = "npm run dev"
+entrypoint = "app/page.tsx"
+modules = ["nodejs-20", "postgresql-16"]
+
+hidden = [".next", "node_modules", ".config"]
+
+[nix]
+channel = "stable-24_05"
+
+[env]
+NEXT_TELEMETRY_DISABLED = "1"
+
+# `npm run dev` binds to $PORT; Replit forwards 3000 to 80 in the workspace.
+[[ports]]
+localPort = 3000
+externalPort = 80
+
+[deployment]
+# Autoscale: stateless web service, scaled to zero when idle.
+deploymentTarget = "autoscale"
+build = ["sh", "-c", "npm ci && npm run build"]
+run = ["sh", "-c", "npm run start"]
+
+[packager]
+language = "nodejs"
+
+[packager.features]
+packageSearch = true
+guessImports = true
+enabledForHosting = false
+
+[languages.typescript]
+pattern = "**/{*.ts,*.tsx}"
+
+[languages.typescript.languageServer]
+start = "typescript-language-server --stdio"

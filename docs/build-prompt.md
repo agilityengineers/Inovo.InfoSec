@@ -1,5 +1,9 @@
 # Prompt for Claude Code
 
+> Historical artifact: the original build brief, kept for reference. The spec it
+> points at now lives at [`docs/design-handoff.md`](design-handoff.md), and the
+> prototypes it refers to are in [`reference/`](../reference).
+
 Paste this as the opening message in Claude Code, run from a new empty repo that contains this handoff folder.
 
 ---
