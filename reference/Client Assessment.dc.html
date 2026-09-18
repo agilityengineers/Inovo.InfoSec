@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#fff;color:#111;font-family:Figtree,"Century Gothic",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#C5131B}a:hover{color:#8f0d13}
+*{box-sizing:border-box}
+input,select,textarea,button{font-family:inherit}
+</style>
+</helmet>
+<div style="--brand: {{ brand.primary }}; min-height:100vh; background:#fff; color:#111; line-height:1.5">
+
+<!-- Prototype controls -->
+<div style="position:sticky;top:0;z-index:50;background:#15161a;color:#c9cbd1;font-size:12px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:8px 16px;border-bottom:1px solid #2a2c33">
+  <span style="font-weight:800;letter-spacing:.12em;font-size:10px;color:#ffd166;border:1px solid #ffd166;border-radius:3px;padding:2px 6px">PROTOTYPE · CLIENT-FACING</span>
+  <div style="display:flex;gap:2px;background:#25272e;border-radius:6px;padding:2px">
+    <button onClick="{{ go.page }}" style="border:0;border-radius:4px;padding:5px 10px;cursor:pointer;font-size:12px;font-weight:600;color:#fff;background: {{ viewBg.page }}">Client page</button>
+    <button onClick="{{ go.admin }}" style="border:0;border-radius:4px;padding:5px 10px;cursor:pointer;font-size:12px;font-weight:600;color:#fff;background: {{ viewBg.admin }}">Admin / Qualification</button>
+  </div>
+  <span style="opacity:.6">Brand:</span>
+  <div style="display:flex;gap:2px;background:#25272e;border-radius:6px;padding:2px">
+    <button onClick="{{ setBrand.inovo }}" style="border:0;border-radius:4px;padding:5px 10px;cursor:pointer;font-size:12px;font-weight:600;color:#fff;background: {{ brandBg.inovo }}">Inovo Infosec</button>
+    <button onClick="{{ setBrand.partner }}" style="border:0;border-radius:4px;padding:5px 10px;cursor:pointer;font-size:12px;font-weight:600;color:#fff;background: {{ brandBg.partner }}">{{ partnerName }} (white label)</button>
+  </div>
+  <label style="display:flex;gap:6px;align-items:center"><span style="opacity:.6">Vertical for this brand:</span>
+    <select value="{{ verticalId }}" onChange="{{ onVerticalChange }}" style="background:#25272e;color:#fff;border:0;border-radius:4px;padding:5px 8px;font-size:12px;font-weight:600">
+      <sc-for list="{{ verticalOptions }}" as="v" hint-placeholder-count="7"><option value="{{ v.id }}">{{ v.label }}</option></sc-for>
+    </select></label>
+  <a href="MSP Assessment.dc.html" style="margin-left:auto;color:#c9cbd1;text-decoration:none;border:1px solid #3a3d46;border-radius:4px;padding:4px 10px">← MSP prototype</a>
+</div>
+
+<!-- ============ CLIENT PAGE ============ -->
+<sc-if value="{{ is.page }}" hint-placeholder-val="{{ true }}">
+<div data-screen-label="Client landing">
+  <header style="border-bottom:1px solid #e8e8ea;background:#fff">
+    <div style="max-width:1160px;margin:0 auto;padding:14px 20px;display:flex;flex-wrap:wrap;align-items:center;gap:16px 28px">
+      <a href="#top" onClick="{{ backToTop }}" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:#111">
+        <sc-if value="{{ brand.hasLogo }}" hint-placeholder-val="{{ false }}"><div role="img" aria-label="{{ brand.name }}" style="height:44px;width:141px;background-image:url({{ brand.logo }});background-size:contain;background-repeat:no-repeat;background-position:left center"></div></sc-if>
+        <sc-if value="{{ brand.noLogo }}" hint-placeholder-val="{{ false }}">
+          <span style="width:36px;height:36px;border-radius:8px;background:var(--brand);color:#fff;display:grid;place-items:center;font-weight:800;font-size:16px">{{ brand.initials }}</span>
+          <span style="display:flex;flex-direction:column;line-height:1.1"><span style="font-weight:700;font-size:17px">{{ brand.name }}</span><span style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#666">{{ brand.tagline }}</span></span>
+        </sc-if>
+      </a>
+      <span style="font-size:13px;font-weight:700;color:#666;letter-spacing:.06em;text-transform:uppercase">{{ vertical.label }} · Security Readiness Assessment</span>
+      <sc-if value="{{ stage.landing }}" hint-placeholder-val="{{ true }}"><button onClick="{{ startAssessment }}" style="margin-left:auto;background:var(--brand);color:#fff;border:0;border-radius:6px;padding:11px 18px;font-weight:700;font-size:14px;cursor:pointer;min-height:44px">Get my score</button></sc-if>
+      <sc-if value="{{ stage.notLanding }}" hint-placeholder-val="{{ false }}"><button onClick="{{ backToTop }}" style="margin-left:auto;background:transparent;border:1px solid #d5d5d9;color:#333;border-radius:6px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;min-height:40px">Exit</button></sc-if>
+    </div>
+  </header>
+
+  <!-- LANDING -->
+  <sc-if value="{{ stage.landing }}" hint-placeholder-val="{{ true }}">
+  <div id="top">
+  <section style="background:linear-gradient(180deg,#faf9f9 0%,#fff 100%);border-bottom:1px solid #eee">
+    <div style="max-width:1160px;margin:0 auto;padding:56px 20px 64px;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:40px;align-items:center">
+      <div>
+        <div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--brand);margin-bottom:14px">For {{ vertical.audience }}</div>
+        <h1 style="font-size:clamp(34px,5vw,52px);line-height:1.05;font-weight:800;letter-spacing:-.02em;margin:0 0 18px;text-wrap:pretty">{{ vertical.headline }}</h1>
+        <p style="font-size:19px;color:#3a3a3e;margin:0 0 26px;max-width:560px;text-wrap:pretty">{{ vertical.subhead }}</p>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+          <button onClick="{{ startAssessment }}" style="background:var(--brand);color:#fff;border:0;border-radius:6px;padding:15px 24px;font-weight:700;font-size:16px;cursor:pointer;min-height:48px">Get my readiness score</button>
+          <a href="{{ brand.ctaDirectUrl }}" target="_blank" style="color:#111;font-weight:700;font-size:15px;text-decoration:none;padding:14px 8px;display:inline-flex;align-items:center;gap:8px">{{ brand.ctaDirectLabel }} <span aria-hidden="true">→</span></a>
+        </div>
+        <div style="margin-top:14px;font-size:13px;color:#6b6b70">24 questions · about 7 minutes · aligned to NIST CSF 2.0 · score shown before you share contact details</div>
+      </div>
+      <div style="background:#fff;border:1px solid #e6e6e9;border-radius:14px;padding:26px;box-shadow:0 20px 50px -30px rgba(0,0,0,.25)">
+        <div style="font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#777;margin-bottom:12px">What you'll receive</div>
+        <div style="display:grid;gap:10px">
+          <div style="display:flex;gap:12px;padding:12px;border-radius:8px;background:#f7f7f8"><span style="width:26px;height:26px;border-radius:6px;background:var(--brand);color:#fff;font-size:12px;font-weight:800;display:grid;place-items:center;flex:none">1</span><div><div style="font-weight:700">A 0–100 readiness score and tier</div><div style="font-size:13px;color:#666">Immediately, no form</div></div></div>
+          <div style="display:flex;gap:12px;padding:12px;border-radius:8px;background:#f7f7f8"><span style="width:26px;height:26px;border-radius:6px;background:var(--brand);color:#fff;font-size:12px;font-weight:800;display:grid;place-items:center;flex:none">2</span><div><div style="font-weight:700">Breakdown across the six NIST CSF functions</div><div style="font-size:13px;color:#666">Govern · Identify · Protect · Detect · Respond · Recover</div></div></div>
+          <div style="display:flex;gap:12px;padding:12px;border-radius:8px;background:#f7f7f8"><span style="width:26px;height:26px;border-radius:6px;background:var(--brand);color:#fff;font-size:12px;font-weight:800;display:grid;place-items:center;flex:none">3</span><div><div style="font-weight:700">{{ vertical.playbook }}</div><div style="font-size:13px;color:#666">Prioritized steps to close your gaps, mapped to {{ vertical.framework }}</div></div></div>
+          <div style="display:flex;gap:12px;padding:12px;border-radius:8px;background:#f7f7f8"><span style="width:26px;height:26px;border-radius:6px;background:var(--brand);color:#fff;font-size:12px;font-weight:800;display:grid;place-items:center;flex:none">4</span><div><div style="font-weight:700">An optional 30‑minute advisory session</div><div style="font-size:13px;color:#666">Walk the results with someone who has built these programs</div></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="border-bottom:1px solid #eee;background:#fff">
+    <div style="max-width:1160px;margin:0 auto;padding:18px 20px;display:flex;flex-wrap:wrap;gap:10px 28px;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#555;letter-spacing:.04em">
+      <span style="color:#999;font-weight:600;letter-spacing:.12em;font-size:11px;text-transform:uppercase">{{ trustLabel }}</span>
+      <span>SOC 2 Type II</span><span>HITRUST</span><span>ISO 27001</span><span>ISO 9001</span><span>Cyber AB RPO</span><span>100% client audit success</span>
+    </div>
+  </section>
+
+  <section style="background:#111214;color:#fff">
+    <div style="max-width:1160px;margin:0 auto;padding:72px 20px">
+      <div style="max-width:760px;margin-bottom:40px">
+        <div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#ff6b6b;margin-bottom:12px">The problem</div>
+        <h2 style="font-size:clamp(28px,4vw,40px);line-height:1.1;font-weight:800;letter-spacing:-.02em;margin:0 0 14px;text-wrap:pretty">{{ vertical.problemHead }}</h2>
+        <p style="font-size:17px;color:#b9bac0;margin:0">{{ vertical.problemBody }}</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px">
+        <sc-for list="{{ vertical.pressures }}" as="p" hint-placeholder-count="3">
+          <div style="background:#1b1c20;border:1px solid #2a2b31;border-radius:12px;padding:26px">
+            <div style="font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#ff6b6b;margin-bottom:10px">{{ p.who }}</div>
+            <div style="font-size:18px;font-weight:700;margin-bottom:8px">"{{ p.ask }}"</div>
+            <p style="margin:0;color:#b9bac0;font-size:15px">{{ p.why }}</p>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <section style="background:#fff">
+    <div style="max-width:1160px;margin:0 auto;padding:72px 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:40px;align-items:start">
+      <div>
+        <div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--brand);margin-bottom:12px">The guide</div>
+        <h2 style="font-size:clamp(28px,4vw,40px);line-height:1.1;font-weight:800;letter-spacing:-.02em;margin:0 0 14px;text-wrap:pretty">{{ guideHead }}</h2>
+        <p style="font-size:17px;color:#3a3a3e;margin:0 0 16px">{{ guideBody }}</p>
+        <p style="font-size:17px;color:#3a3a3e;margin:0">The program is built on the NIST Cybersecurity Framework and delivered by people who hold the same certifications they help clients earn — and who stay in the room after the report.</p>
+      </div>
+      <div style="display:grid;gap:12px">
+        <div style="display:flex;gap:14px;padding:18px;border:1px solid #e6e6e9;border-radius:10px"><span style="color:var(--brand);font-weight:800;font-size:20px;line-height:1">✓</span><div><div style="font-weight:700">CISO‑level ownership, not a report and a handshake</div><div style="color:#666;font-size:14px">A named security leader who builds the roadmap and leads your security committee</div></div></div>
+        <div style="display:flex;gap:14px;padding:18px;border:1px solid #e6e6e9;border-radius:10px"><span style="color:var(--brand);font-weight:800;font-size:20px;line-height:1">✓</span><div><div style="font-weight:700">{{ vertical.framework }} expertise</div><div style="color:#666;font-size:14px">{{ vertical.guideProof }}</div></div></div>
+        <div style="display:flex;gap:14px;padding:18px;border:1px solid #e6e6e9;border-radius:10px"><span style="color:var(--brand);font-weight:800;font-size:20px;line-height:1">✓</span><div><div style="font-weight:700">Evidence you can hand to {{ vertical.auditor }}</div><div style="color:#666;font-size:14px">Policies, controls, risks, and action items tracked in one transparent GRC platform</div></div></div>
+        <div style="display:flex;gap:14px;padding:18px;border:1px solid #e6e6e9;border-radius:10px"><span style="color:var(--brand);font-weight:800;font-size:20px;line-height:1">✓</span><div><div style="font-weight:700">24/7 incident response when it matters</div><div style="color:#666;font-size:14px">Containment, forensics, recovery, and breach‑reporting guidance</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section style="background:#f6f6f7;border-top:1px solid #eee;border-bottom:1px solid #eee">
+    <div style="max-width:1160px;margin:0 auto;padding:72px 20px">
+      <div style="max-width:720px;margin-bottom:36px">
+        <div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--brand);margin-bottom:12px">The plan</div>
+        <h2 style="font-size:clamp(28px,4vw,40px);line-height:1.1;font-weight:800;letter-spacing:-.02em;margin:0 0 14px">Assess. Remediate. Manage.</h2>
+        <p style="font-size:17px;color:#3a3a3e;margin:0">Three steps that turn {{ vertical.framework }} from a looming project into a program your organization runs every year.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px">
+        <div style="background:#fff;border-radius:12px;padding:28px;border:1px solid #e6e6e9"><div style="font-size:40px;font-weight:800;color:var(--brand);line-height:1;margin-bottom:12px">01</div><div style="font-size:20px;font-weight:800;margin-bottom:8px">Assess</div><p style="margin:0;color:#555;font-size:15px">Your readiness score today, then a formal assessment that benchmarks your environment against {{ vertical.framework }} and tells you exactly what to prioritize.</p></div>
+        <div style="background:#fff;border-radius:12px;padding:28px;border:1px solid #e6e6e9"><div style="font-size:40px;font-weight:800;color:var(--brand);line-height:1;margin-bottom:12px">02</div><div style="font-size:20px;font-weight:800;margin-bottom:8px">Remediate</div><p style="margin:0;color:#555;font-size:15px">Controls, policies, and evidence implemented in priority order — with your IT team, not around it. Every control documented; every policy auditable.</p></div>
+        <div style="background:#fff;border-radius:12px;padding:28px;border:1px solid #e6e6e9"><div style="font-size:40px;font-weight:800;color:var(--brand);line-height:1;margin-bottom:12px">03</div><div style="font-size:20px;font-weight:800;margin-bottom:8px">Manage</div><p style="margin:0;color:#555;font-size:15px">Ongoing security leadership: monitoring, risk reviews, audit preparation, and a straight answer whenever {{ vertical.auditor }} asks.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section style="background:#fff">
+    <div style="max-width:1160px;margin:0 auto;padding:72px 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:40px;align-items:center">
+      <div>
+        <div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--brand);margin-bottom:12px">What waiting costs</div>
+        <h2 style="font-size:clamp(26px,3.5vw,36px);line-height:1.1;font-weight:800;letter-spacing:-.02em;margin:0 0 18px;text-wrap:pretty">{{ vertical.stakesHead }}</h2>
+        <div style="display:grid;gap:12px;font-size:16px;color:#3a3a3e">
+          <sc-for list="{{ vertical.stakes }}" as="s" hint-placeholder-count="4"><div style="display:flex;gap:12px"><span style="color:var(--brand);font-weight:800">—</span><span>{{ s }}</span></div></sc-for>
+        </div>
+      </div>
+      <div style="background:#111214;color:#fff;border-radius:14px;padding:32px">
+        <div style="font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#ff8080;margin-bottom:10px">Seven minutes</div>
+        <div style="font-size:24px;font-weight:800;line-height:1.15;margin-bottom:10px">Find out where you stand before {{ vertical.auditor }} does.</div>
+        <p style="margin:0 0 20px;color:#b9bac0;font-size:15px">Your score is shown immediately. The full report and {{ vertical.playbook }} follow once you tell us where to send them.</p>
+        <button onClick="{{ startAssessment }}" style="background:#fff;color:#111;border:0;border-radius:6px;padding:15px 24px;font-weight:800;font-size:16px;cursor:pointer;min-height:48px">Get my readiness score</button>
+      </div>
+    </div>
+  </section>
+
+  <footer style="background:#fff;border-top:1px solid #e8e8ea">
+    <div style="max-width:1160px;margin:0 auto;padding:44px 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:28px;font-size:14px;color:#555">
+      <div>
+        <sc-if value="{{ brand.hasLogo }}" hint-placeholder-val="{{ false }}"><div role="img" aria-label="{{ brand.name }}" style="height:40px;width:128px;margin-bottom:12px;background-image:url({{ brand.logo }});background-size:contain;background-repeat:no-repeat;background-position:left center"></div></sc-if>
+        <sc-if value="{{ brand.noLogo }}" hint-placeholder-val="{{ false }}"><div style="font-weight:800;font-size:18px;color:#111;margin-bottom:12px">{{ brand.name }}</div></sc-if>
+        <div>{{ brand.address }}</div>
+        <div style="margin-top:6px">Phone: {{ brand.phone }}</div>
+        <div>Email: {{ brand.email }}</div>
+        <sc-if value="{{ brand.poweredBy }}" hint-placeholder-val="{{ false }}"><div style="margin-top:10px;font-size:12px;color:#888">Security program delivered with Inovo Infosec</div></sc-if>
+      </div>
+      <div style="display:grid;gap:6px;align-content:start"><div style="font-weight:700;color:#111">Assessment</div><span>Aligned to NIST CSF 2.0</span><span>Tailored for {{ vertical.label }}</span><span>Your answers are used only to generate your report</span></div>
+      <div style="display:grid;gap:6px;align-content:start"><div style="font-weight:700;color:#111">24/7 security incident</div><div style="font-size:20px;font-weight:800;color:var(--brand)">{{ brand.incidentPhone }}</div></div>
+    </div>
+    <div style="max-width:1160px;margin:0 auto;padding:0 20px 28px;font-size:12px;color:#888">© 2026 {{ brand.legalName }}. All rights reserved.</div>
+  </footer>
+  </div>
+  </sc-if>
+
+  <!-- QUESTIONS -->
+  <sc-if value="{{ stage.questions }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="Client question" style="background:#f6f6f7;min-height:calc(100vh - 110px)">
+  <div style="max-width:760px;margin:0 auto;padding:36px 20px;width:100%">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:13px;font-weight:700;color:#555;margin-bottom:8px">
+      <span style="color:var(--brand);text-transform:uppercase;letter-spacing:.1em;font-size:12px">{{ q.fn }} · {{ q.fnDesc }}</span>
+      <span>Question {{ qNum }} of {{ qTotal }}</span>
+    </div>
+    <div style="height:6px;background:#e3e3e6;border-radius:3px;overflow:hidden;margin-bottom:26px"><div style="height:100%;background:var(--brand);border-radius:3px;transition:width .3s ease;width: {{ progressPct }}%"></div></div>
+    <div style="background:#fff;border-radius:16px;border:1px solid #e6e6e9;padding:32px">
+      <h2 style="font-size:clamp(21px,3vw,27px);line-height:1.25;font-weight:800;letter-spacing:-.01em;margin:0 0 8px;text-wrap:pretty">{{ q.text }}</h2>
+      <p style="margin:0 0 22px;color:#666;font-size:15px">{{ q.help }}</p>
+      <div style="display:grid;gap:10px" role="radiogroup">
+        <sc-for list="{{ options }}" as="opt" hint-placeholder-count="4">
+          <button role="radio" aria-checked="{{ opt.selected }}" onClick="{{ opt.select }}" style="display:flex;gap:14px;align-items:center;text-align:left;width:100%;padding:14px 16px;border-radius:10px;cursor:pointer;font-size:15px;line-height:1.4;color:#111;min-height:52px;border:2px solid {{ opt.border }};background: {{ opt.bg }}" style-hover="border-color:#9a9aa0">
+            <span style="width:20px;height:20px;border-radius:50%;flex:none;display:grid;place-items:center;border:2px solid {{ opt.dotBorder }};background: {{ opt.dotBg }}"><span style="width:8px;height:8px;border-radius:50%;background:#fff"></span></span>
+            <span style="flex:1">{{ opt.label }}</span>
+          </button>
+        </sc-for>
+      </div>
+      <sc-if value="{{ showValidation }}" hint-placeholder-val="{{ false }}"><div style="margin-top:14px;color:#b3121a;font-size:14px;font-weight:600">Choose an answer to continue.</div></sc-if>
+      <div style="display:flex;justify-content:space-between;gap:12px;margin-top:26px;flex-wrap:wrap">
+        <button onClick="{{ prevQuestion }}" disabled="{{ isFirst }}" style="background:#fff;color:#333;border:1px solid #cfcfd3;border-radius:6px;padding:12px 18px;font-weight:700;font-size:15px;cursor:pointer;min-height:46px;opacity: {{ backOpacity }}">← Back</button>
+        <button onClick="{{ nextQuestion }}" style="background:var(--brand);color:#fff;border:0;border-radius:6px;padding:12px 22px;font-weight:700;font-size:15px;cursor:pointer;min-height:46px">{{ nextLabel }}</button>
+      </div>
+    </div>
+    <div style="margin-top:14px;font-size:12px;color:#888;text-align:center">Answers are saved in your browser as you go. Nothing is sent until you request your report.</div>
+  </div></div>
+  </sc-if>
+
+  <!-- PREVIEW -->
+  <sc-if value="{{ stage.preview }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="Client score preview" style="background:#f6f6f7;min-height:calc(100vh - 110px)">
+  <div style="max-width:860px;margin:0 auto;padding:40px 20px;width:100%">
+    <div style="background:#fff;border-radius:16px;border:1px solid #e6e6e9;padding:36px;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:32px;align-items:center">
+      <div style="display:flex;flex-direction:column;align-items:center;text-align:center">
+        <div style="position:relative;width:190px;height:190px"><svg width="190" height="190" viewBox="0 0 120 120" aria-label="Score"><circle cx="60" cy="60" r="52" fill="none" stroke="#ececef" stroke-width="10"></circle><circle cx="60" cy="60" r="52" fill="none" stroke="var(--brand)" stroke-width="10" stroke-linecap="round" transform="rotate(-90 60 60)" stroke-dasharray="{{ ring.dash }}"></circle></svg><div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1"><span style="font-size:46px;font-weight:800;color:#111">{{ score }}</span><span style="font-size:11px;font-weight:700;color:#777;letter-spacing:.14em;margin-top:6px">OUT OF 100</span></div></div>
+        <div style="margin-top:8px;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#777">Readiness tier</div>
+        <div style="font-size:26px;font-weight:800;color:var(--brand)">{{ tier.name }}</div>
+        <p style="margin:8px 0 0;color:#555;font-size:14px;max-width:300px">{{ tier.summary }}</p>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#777;margin-bottom:10px">Six NIST CSF functions</div>
+        <div style="display:grid;gap:10px;filter:blur(5px);pointer-events:none;user-select:none" aria-hidden="true">
+          <sc-for list="{{ fnScores }}" as="d" hint-placeholder-count="6"><div><div style="display:flex;justify-content:space-between;font-size:14px;font-weight:600"><span>{{ d.name }}</span><span>{{ d.pct }}%</span></div><div style="height:8px;background:#ececef;border-radius:4px;overflow:hidden"><div style="height:100%;background:var(--brand);width: {{ d.pct }}%"></div></div></div></sc-for>
+        </div>
+        <div style="margin-top:18px;padding:16px;border-radius:10px;background:#f6f6f7;border:1px solid #e6e6e9">
+          <div style="font-weight:800;font-size:16px;margin-bottom:4px">Strongest: {{ bestFn }}. Most exposed: {{ worstFn }}.</div>
+          <div style="color:#555;font-size:14px">Your full report and {{ vertical.playbook }} show all six scores and the prioritized steps for {{ vertical.framework }}.</div>
+        </div>
+        <button onClick="{{ toGate }}" style="margin-top:16px;width:100%;background:var(--brand);color:#fff;border:0;border-radius:6px;padding:15px 22px;font-weight:700;font-size:16px;cursor:pointer;min-height:48px">Get my report + playbook</button>
+        <button onClick="{{ backToQuestions }}" style="margin-top:8px;width:100%;background:transparent;color:#555;border:0;padding:10px;font-weight:600;font-size:14px;cursor:pointer">← Review my answers</button>
+      </div>
+    </div>
+  </div></div>
+  </sc-if>
+
+  <!-- GATE -->
+  <sc-if value="{{ stage.gate }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="Client lead gate" style="background:#f6f6f7;min-height:calc(100vh - 110px)">
+  <div style="max-width:960px;margin:0 auto;padding:40px 20px;width:100%">
+    <div style="background:#fff;border-radius:16px;border:1px solid #e6e6e9;padding:36px;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:32px;align-items:start">
+      <div>
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
+          <div style="width:64px;height:64px;border-radius:50%;border:6px solid var(--brand);display:grid;place-items:center;font-weight:800;font-size:22px">{{ score }}</div>
+          <div><div style="font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#777">Your result</div><div style="font-size:20px;font-weight:800;color:var(--brand)">{{ tier.name }}</div></div>
+        </div>
+        <h2 style="font-size:clamp(22px,3vw,30px);line-height:1.15;font-weight:800;letter-spacing:-.01em;margin:0 0 12px;text-wrap:pretty">Where should we send your report and {{ vertical.playbook }}?</h2>
+        <div style="display:grid;gap:8px;font-size:15px;color:#333">
+          <div style="display:flex;gap:10px"><span style="color:var(--brand)">✓</span>Scores for all six CSF functions</div>
+          <div style="display:flex;gap:10px"><span style="color:var(--brand)">✓</span>{{ gapCount }} prioritized gaps and the fix for each</div>
+          <div style="display:flex;gap:10px"><span style="color:var(--brand)">✓</span>{{ vertical.playbook }} (PDF)</div>
+          <div style="display:flex;gap:10px"><span style="color:var(--brand)">✓</span>Optional 30‑minute advisory session</div>
+        </div>
+        <div style="margin-top:22px;padding:14px 16px;border-radius:10px;background:#f6f6f7;font-size:13px;color:#555">The three questions on the right about deadlines and data help us tailor the playbook to your situation. {{ routingNote }}</div>
+      </div>
+      <div style="display:grid;gap:12px">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px">
+          <label style="display:grid;gap:5px;font-size:13px;font-weight:600;color:#333">Full name<input name="name" value="{{ lead.name }}" onChange="{{ onLeadChange }}" style="padding:11px 12px;border-radius:6px;border:1px solid {{ lb.name }};font-size:15px;min-height:44px;min-width:0;width:100%"><sc-if value="{{ leadErr.name }}"><span style="color:#b3121a;font-size:12px;font-weight:500">{{ leadErr.name }}</span></sc-if></label>
+          <label style="display:grid;gap:5px;font-size:13px;font-weight:600;color:#333">Organization<input name="company" value="{{ lead.company }}" onChange="{{ onLeadChange }}" style="padding:11px 12px;border-radius:6px;border:1px solid {{ lb.company }};font-size:15px;min-height:44px;min-width:0;width:100%"><sc-if value="{{ leadErr.company }}"><span style="color:#b3121a;font-size:12px;font-weight:500">{{ leadErr.company }}</span></sc-if></label>
+        </div>
+        <label style="display:grid;gap:5px;font-size:13px;font-weight:600;color:#333">Work email<input name="email" type="email" value="{{ lead.email }}" onChange="{{ onLeadChange }}" style="padding:11px 12px;border-radius:6px;border:1px solid {{ lb.email }};font-size:15px;min-height:44px;min-width:0;width:100%"><sc-if value="{{ leadErr.email }}"><span style="color:#b3121a;font-size:12px;font-weight:500">{{ leadErr.email }}</span></sc-if></label>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px">
+          <label style="display:grid;gap:5px;font-size:13px;font-weight:600;color:#333">Role<select name="role" value="{{ lead.role }}" onChange="{{ onLeadChange }}" style="padding:11px 12px;border-radius:6px;border:1px solid {{ lb.role }};font-size:15px;min-height:44px;background:#fff;min-width:0;width:100%"><option value="">Select…</option><option>CIO</option><option>CTO</option><option>CISO / Security lead</option><option>IT Director / Manager</option><option>Compliance / Risk</option><option>CEO / Owner</option><option>CFO / COO</option><option>Other</option></select><sc-if value="{{ leadErr.role }}"><span style="color:#b3121a;font-size:12px;font-weight:500">{{ leadErr.role }}</span></sc-if></label>
+          <label style="display:grid;gap:5px;font-size:13px;font-weight:600;color:#333">Phone<input name="phone" type="tel" value="{{ lead.phone }}" onChange="{{ onLeadChange }}" style="padding:11px 12px;border-radius:6px;border:1px solid {{ lb.phone }};font-size:15px;min-height:44px;min-width:0;width:100%"><sc-if value="{{ leadErr.phone }}"><span style="color:#b3121a;font-size:12px;font-weight:500">{{ leadErr.phone }}</span></sc-if></label>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px">
+          <label style="display:grid;gap:5px;font-size:13px;font-weight:600;color:#333">Employees<select name="employees" value="{{ lead.employees }}" onChange="{{ onLeadChange }}" style="padding:11px 12px;border-radius:6px;border:1px solid {{ lb.employees }};font-size:15px;min-height:44px;background:#fff;min-width:0;width:100%"><option value="">Select…</option><option>Under 50</option><option>50–199</option><option>200–499</option><option>500–999</option><option>1,000+</option></select><sc-if value="{{ leadErr.employees }}"><span style="color:#b3121a;font-size:12px;font-weight:500">{{ leadErr.employees }}</span></sc-if></label>
+          <label style="display:grid;gap:5px;font-size:13px;font-weight:600;color:#333">Who handles security today?<select name="provider" value="{{ lead.provider }}" onChange="{{ onLeadChange }}" style="padding:11px 12px;border-radius:6px;border:1px solid {{ lb.provider }};font-size:15px;min-height:44px;background:#fff;min-width:0;width:100%"><option value="">Select…</option><option>Our MSP / IT provider</option><option>Internal IT team</option><option>We have a vCISO / security firm</option><option>Internal security team</option><option>No one specifically</option></select><sc-if value="{{ leadErr.provider }}"><span style="color:#b3121a;font-size:12px;font-weight:500">{{ leadErr.provider }}</span></sc-if></label>
+        </div>
+        <div style="display:grid;gap:6px;font-size:13px;font-weight:600;color:#333">Frameworks you're required to meet
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <sc-for list="{{ fwChips }}" as="c" hint-placeholder-count="8"><button onClick="{{ c.toggle }}" style="border-radius:999px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;min-height:34px;border:1px solid {{ c.border }};background: {{ c.bg }};color: {{ c.color }}">{{ c.label }}</button></sc-for>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px">
+          <label style="display:grid;gap:5px;font-size:13px;font-weight:600;color:#333">{{ vertical.deadlineLabel }}<input name="deadline" type="date" value="{{ lead.deadline }}" onChange="{{ onLeadChange }}" style="padding:10px 12px;border-radius:6px;border:1px solid #cfcfd3;font-size:15px;min-height:44px;min-width:0;width:100%;background:#fff"></label>
+          <label style="display:grid;gap:5px;font-size:13px;font-weight:600;color:#333">Timeline to act<select name="timeline" value="{{ lead.timeline }}" onChange="{{ onLeadChange }}" style="padding:11px 12px;border-radius:6px;border:1px solid {{ lb.timeline }};font-size:15px;min-height:44px;background:#fff;min-width:0;width:100%"><option value="">Select…</option><option>Within 30 days</option><option>Within 90 days</option><option>Within 180 days</option><option>No set timeline</option></select><sc-if value="{{ leadErr.timeline }}"><span style="color:#b3121a;font-size:12px;font-weight:500">{{ leadErr.timeline }}</span></sc-if></label>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px">
+          <label style="display:grid;gap:5px;font-size:13px;font-weight:600;color:#333">Budget authority<select name="budget" value="{{ lead.budget }}" onChange="{{ onLeadChange }}" style="padding:11px 12px;border-radius:6px;border:1px solid {{ lb.budget }};font-size:15px;min-height:44px;background:#fff;min-width:0;width:100%"><option value="">Select…</option><option>I own the budget</option><option>Shared / need approval</option><option>Influence only</option></select><sc-if value="{{ leadErr.budget }}"><span style="color:#b3121a;font-size:12px;font-weight:500">{{ leadErr.budget }}</span></sc-if></label>
+          <label style="display:grid;gap:5px;font-size:13px;font-weight:600;color:#333">{{ vertical.sensitiveLabel }}<select name="sensitive" value="{{ lead.sensitive }}" onChange="{{ onLeadChange }}" style="padding:11px 12px;border-radius:6px;border:1px solid {{ lb.sensitive }};font-size:15px;min-height:44px;background:#fff;min-width:0;width:100%"><option value="">Select…</option><option>Yes</option><option>No</option><option>Not sure</option></select><sc-if value="{{ leadErr.sensitive }}"><span style="color:#b3121a;font-size:12px;font-weight:500">{{ leadErr.sensitive }}</span></sc-if></label>
+        </div>
+        <button onClick="{{ submitLead }}" style="background:var(--brand);color:#fff;border:0;border-radius:6px;padding:15px 22px;font-weight:700;font-size:16px;cursor:pointer;min-height:48px;margin-top:4px">Send my report + playbook</button>
+        <button onClick="{{ backToPreview }}" style="background:transparent;color:#555;border:0;padding:8px;font-weight:600;font-size:14px;cursor:pointer">← Back</button>
+      </div>
+    </div>
+  </div></div>
+  </sc-if>
+
+  <!-- REPORT -->
+  <sc-if value="{{ stage.report }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="Client report" style="background:#f6f6f7">
+  <div style="max-width:960px;margin:0 auto;padding:40px 20px 64px;width:100%">
+    <div style="background:#fff;border-radius:16px;border:1px solid #e6e6e9;padding:36px;margin-bottom:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:28px;align-items:center">
+      <div style="display:flex;align-items:center;gap:20px">
+        <div style="position:relative;width:130px;height:130px;flex:none"><svg width="130" height="130" viewBox="0 0 120 120" aria-label="Score"><circle cx="60" cy="60" r="52" fill="none" stroke="#ececef" stroke-width="10"></circle><circle cx="60" cy="60" r="52" fill="none" stroke="var(--brand)" stroke-width="10" stroke-linecap="round" transform="rotate(-90 60 60)" stroke-dasharray="{{ ring.dash }}"></circle></svg><div style="position:absolute;inset:0;display:grid;place-items:center;font-size:38px;font-weight:800;color:#111;line-height:1">{{ score }}</div></div>
+        <div>
+          <div style="font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#777">{{ vertical.label }} Readiness Report</div>
+          <div style="font-size:26px;font-weight:800;color:var(--brand);line-height:1.1">{{ tier.name }}</div>
+          <div style="font-size:14px;color:#555;margin-top:6px">Prepared for {{ lead.name }}, {{ lead.company }}</div>
+        </div>
+      </div>
+      <div>
+        <p style="margin:0 0 12px;font-size:16px;color:#333">{{ tier.detail }}</p>
+        <div style="display:flex;gap:4px">
+          <sc-for list="{{ tierScale }}" as="t" hint-placeholder-count="4"><div style="flex:1;text-align:center"><div style="height:8px;border-radius:2px;background: {{ t.bg }}"></div><div style="font-size:11px;font-weight:700;color: {{ t.color }};margin-top:4px">{{ t.name }}</div></div></sc-for>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:#fff;border-radius:16px;border:1px solid #e6e6e9;padding:36px;margin-bottom:20px">
+      <div style="font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#777;margin-bottom:16px">NIST CSF 2.0 function breakdown</div>
+      <div style="display:grid;gap:14px">
+        <sc-for list="{{ fnScores }}" as="d" hint-placeholder-count="6">
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 16px;align-items:center">
+            <div style="font-weight:700;font-size:15px">{{ d.name }} <span style="font-size:12px;font-weight:500;color:#888;margin-left:6px">{{ d.desc }}</span></div>
+            <div style="font-size:12px;font-weight:700;padding:3px 8px;border-radius:4px;color:#fff;background: {{ d.statusBg }}">{{ d.statusLabel }}</div>
+            <div style="grid-column:1 / -1;display:flex;align-items:center;gap:12px"><div style="flex:1;height:10px;background:#ececef;border-radius:5px;overflow:hidden"><div style="height:100%;background:var(--brand);border-radius:5px;width: {{ d.pct }}%"></div></div><span style="font-weight:800;font-size:15px;min-width:44px;text-align:right">{{ d.pct }}%</span></div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="background:#fff;border-radius:16px;border:1px solid #e6e6e9;padding:36px;margin-bottom:20px">
+      <div style="font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#777;margin-bottom:6px">Recommendations</div>
+      <div style="font-size:20px;font-weight:800;margin-bottom:18px">Prioritized by weighted exposure. The playbook expands each into steps.</div>
+      <div style="display:grid;gap:14px">
+        <sc-for list="{{ recs }}" as="r" hint-placeholder-count="7">
+          <div style="border:1px solid #e6e6e9;border-radius:12px;padding:20px;display:grid;gap:8px">
+            <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"><span style="width:26px;height:26px;border-radius:6px;background:var(--brand);color:#fff;font-size:12px;font-weight:800;display:grid;place-items:center">{{ r.n }}</span><span style="font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#777">{{ r.fn }}</span><span style="font-size:12px;font-weight:700;padding:2px 8px;border-radius:4px;color:#fff;background: {{ r.statusBg }}">{{ r.statusLabel }}</span></div>
+            <div style="font-weight:800;font-size:17px">{{ r.title }}</div>
+            <p style="margin:0;color:#444;font-size:15px">{{ r.body }}</p>
+            <div style="font-size:13px;color:#333;background:#f6f6f7;border-radius:6px;padding:8px 12px;display:inline-block;justify-self:start"><span style="color:#777">How {{ brand.name }} helps:</span> <strong>{{ r.service }}</strong></div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px">
+      <div style="background:#fff;border-radius:16px;border:1px solid #e6e6e9;padding:32px;display:grid;gap:12px;align-content:start">
+        <div style="font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--brand)">Your playbook</div>
+        <div style="font-size:22px;font-weight:800;line-height:1.15">{{ vertical.playbook }}</div>
+        <p style="margin:0;color:#555;font-size:15px">Step‑by‑step approach to {{ vertical.framework }} readiness: what to do in the first 30 days, first 90, and before {{ vertical.auditor }} arrives. Personalized with your {{ gapCount }} gaps.</p>
+        <div style="padding:10px 12px;border:1px dashed #c9c9cd;border-radius:8px;font-size:12px;color:#777;background:#fafafa">[PLACEHOLDER — playbook PDF content per vertical, to be authored by Inovo]</div>
+        <button onClick="{{ downloadStub }}" style="background:#111;color:#fff;border:0;border-radius:6px;padding:14px 20px;font-weight:700;font-size:15px;cursor:pointer;min-height:48px">Download the playbook (stub)</button>
+        <div style="font-size:12px;color:#888">Also sent to {{ lead.email }} (stub)</div>
+      </div>
+      <div style="background:#111214;color:#fff;border-radius:16px;padding:32px;display:grid;gap:12px;align-content:start">
+        <div style="font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#ff8080">Talk it through</div>
+        <div style="font-size:22px;font-weight:800;line-height:1.15">30 minutes with an advisor who has built {{ vertical.framework }} programs.</div>
+        <p style="margin:0;color:#b9bac0;font-size:15px">Confirm the top gaps, learn which are cheap to close, and leave with a sequenced plan. No pitch.</p>
+        <a href="{{ brand.ctaDirectUrl }}" target="_blank" style="background:#fff;color:#111;border-radius:6px;padding:14px 20px;font-weight:700;font-size:15px;text-decoration:none;text-align:center;min-height:48px;display:grid;place-items:center">{{ brand.reportCtaLabel }}</a>
+        <div style="font-size:12px;color:#7d7f88">{{ routingNote }}</div>
+        <button onClick="{{ retake }}" style="background:transparent;border:0;color:#b9bac0;cursor:pointer;text-decoration:underline;font-size:13px;justify-self:start;padding:0">Retake assessment</button>
+      </div>
+    </div>
+    <sc-if value="{{ brand.poweredBy }}" hint-placeholder-val="{{ false }}"><div style="text-align:center;margin-top:16px;font-size:12px;color:#888">Assessment methodology and security program delivered with Inovo Infosec</div></sc-if>
+  </div></div>
+  </sc-if>
+</div>
+</sc-if>
+
+<!-- ============ ADMIN ============ -->
+<sc-if value="{{ is.admin }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Client admin" style="min-height:calc(100vh - 40px);background:#f3f3f5">
+  <div style="max-width:1160px;margin:0 auto;padding:28px 20px">
+    <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:20px">
+      <div><div style="font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#777">Admin · client assessment</div><div style="font-size:24px;font-weight:800">Qualified leads, routing &amp; vertical config</div></div>
+      <div style="margin-left:auto;font-size:13px;color:#666">Brand fields (logo, colors, CTAs) are edited in the <a href="MSP Assessment.dc.html">MSP prototype's Admin</a> and shared here.</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px;align-items:start">
+      <div style="background:#fff;border-radius:12px;border:1px solid #e3e3e6;overflow:hidden;min-width:0">
+        <div style="padding:14px 18px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;gap:10px"><div style="font-weight:800">Client leads ({{ leadCount }})</div><button onClick="{{ seedDemoLead }}" style="border:1px solid #d5d5d9;background:#fff;border-radius:6px;padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer">+ Seed sample lead</button></div>
+        <sc-if value="{{ noLeads }}" hint-placeholder-val="{{ true }}"><div style="padding:28px 18px;color:#777;font-size:14px">No client leads yet. Complete the client assessment to see a qualified lead here.</div></sc-if>
+        <div style="display:grid">
+          <sc-for list="{{ leadRows }}" as="row" hint-placeholder-count="0">
+            <button onClick="{{ row.select }}" style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;text-align:left;padding:12px 18px;border:0;border-bottom:1px solid #f0f0f2;cursor:pointer;background: {{ row.bg }}">
+              <div style="font-weight:700;font-size:14px;color:#111">{{ row.name }} <span style="color:#777;font-weight:500">· {{ row.company }} · {{ row.role }}</span></div>
+              <div style="font-size:11px;font-weight:800;padding:2px 8px;border-radius:4px;color:#fff;background: {{ row.qualBg }};align-self:start;letter-spacing:.06em">{{ row.qual }}</div>
+              <div style="font-size:12px;color:#777">{{ row.meta }}</div>
+              <div style="font-size:12px;color:#777;text-align:right">{{ row.when }}</div>
+              <div style="grid-column:1 / -1;font-size:12px;color:#555">{{ row.reasons }}</div>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display:grid;gap:18px;min-width:0">
+        <div style="background:#fff;border-radius:12px;border:1px solid #e3e3e6;padding:22px;min-width:0">
+          <div style="font-weight:800;font-size:18px;margin-bottom:4px">Qualification rule <span style="font-size:12px;color:#777;font-weight:500">— live; badges recalculate</span></div>
+          <div style="font-size:14px;color:#444;margin-bottom:14px"><strong>HOT</strong> = score &lt; {{ qual.hotScoreBelow }} AND urgency ≤ {{ qual.hotDays }} days AND budget authority is not "influence only". <strong>WARM</strong> = score &lt; {{ qual.warmScoreBelow }} OR urgency ≤ {{ qual.warmDays }} days. Otherwise <strong>NURTURE</strong>. Urgency = days to the stated deadline, or the selected timeline if no date given.</div>
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+            <label style="display:grid;gap:5px;font-size:13px;font-weight:600">Hot: score below<input type="number" name="hotScoreBelow" value="{{ qual.hotScoreBelow }}" onChange="{{ onQualChange }}" style="padding:8px 10px;border-radius:6px;border:1px solid #d5d5d9;font-size:14px;min-width:0;width:100%"></label>
+            <label style="display:grid;gap:5px;font-size:13px;font-weight:600">Hot: urgency ≤ days<input type="number" name="hotDays" value="{{ qual.hotDays }}" onChange="{{ onQualChange }}" style="padding:8px 10px;border-radius:6px;border:1px solid #d5d5d9;font-size:14px;min-width:0;width:100%"></label>
+            <label style="display:grid;gap:5px;font-size:13px;font-weight:600">Warm: score below<input type="number" name="warmScoreBelow" value="{{ qual.warmScoreBelow }}" onChange="{{ onQualChange }}" style="padding:8px 10px;border-radius:6px;border:1px solid #d5d5d9;font-size:14px;min-width:0;width:100%"></label>
+            <label style="display:grid;gap:5px;font-size:13px;font-weight:600">Warm: urgency ≤ days<input type="number" name="warmDays" value="{{ qual.warmDays }}" onChange="{{ onQualChange }}" style="padding:8px 10px;border-radius:6px;border:1px solid #d5d5d9;font-size:14px;min-width:0;width:100%"></label>
+          </div>
+        </div>
+        <div style="background:#fff;border-radius:12px;border:1px solid #e3e3e6;padding:22px;min-width:0">
+          <div style="font-weight:800;font-size:18px;margin-bottom:4px">Vertical &amp; routing per brand</div>
+          <div style="font-size:13px;color:#777;margin-bottom:14px">Each brand's client page is single‑vertical. Outreach for another vertical = another brand record (or subdomain) pointed at that vertical.</div>
+          <div style="display:grid;gap:10px">
+            <sc-for list="{{ brandVerticalRows }}" as="b" hint-placeholder-count="2">
+              <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;align-items:center;padding:12px;border:1px solid #e6e6e9;border-radius:8px">
+                <div><div style="font-weight:700">{{ b.name }}</div><div style="font-size:12px;color:#777">{{ b.routing }}</div></div>
+                <select name="{{ b.id }}" value="{{ b.verticalId }}" onChange="{{ onBrandVertical }}" style="padding:9px 10px;border-radius:6px;border:1px solid #d5d5d9;font-size:14px;min-width:0;width:100%;background:#fff">
+                  <sc-for list="{{ verticalOptions }}" as="v" hint-placeholder-count="7"><option value="{{ v.id }}">{{ v.label }}</option></sc-for>
+                </select>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="background:#fff;border-radius:12px;border:1px solid #e3e3e6;overflow:hidden;min-width:0">
+          <div style="padding:14px 18px;border-bottom:1px solid #eee;font-weight:800">Submission payload <span style="font-size:12px;color:#777;font-weight:500">{{ selectedLabel }}</span></div>
+          <pre style="margin:0;padding:16px 18px;font-size:12px;line-height:1.5;max-height:480px;overflow:auto;background:#15161a;color:#d7e3d3;font-family:ui-monospace,SFMono-Regular,Menlo,monospace">{{ payloadJson }}</pre>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:18px;background:#fff;border-radius:12px;border:1px solid #e3e3e6;padding:22px;font-size:14px;color:#444">
+      <div style="font-weight:800;font-size:18px;margin-bottom:8px">Notes for this page</div>
+      <div style="display:grid;gap:6px">
+        <div>· Purpose: front‑end qualification for outbound outreach to Inovo's ICP (CIO / CTO / CISO / compliance leads at regulated organizations), deployable under Inovo's brand or a partner's.</div>
+        <div>· Tailoring: hero, problem, stakes, playbook title, form labels, question wording, and recommendations all switch with the vertical. Question wording uses vertical tokens (regulated data type, framework, who audits) over a shared NIST CSF 2.0 spine, so scoring stays comparable across verticals.</div>
+        <div>· Scoring: 24 questions × 0–3 points; six equally weighted functions; tiers Exposed &lt; 40 · Developing &lt; 60 · Established &lt; 80 · Resilient ≥ 80. Weights/tiers are defined in the logic and can be made editable like the MSP page if wanted.</div>
+        <div>· Routing (co‑delivery): in partner mode the payload lists both the partner's inbox and sales@inovois.com; in Inovo mode, Inovo only. Actual send is stubbed.</div>
+        <div>· Placeholders: playbook PDFs per vertical; partner logo; Calendly URLs; vertical copy should be reviewed by Inovo's practice leads.</div>
+      </div>
+    </div>
+  </div>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.LS = 'inovo-msp-proto:';
+    this.FNS = [
+      { id: 'govern', name: 'Govern', desc: 'ownership, policy, risk' },
+      { id: 'identify', name: 'Identify', desc: 'assets, data, risk assessment' },
+      { id: 'protect', name: 'Protect', desc: 'access, encryption, people' },
+      { id: 'detect', name: 'Detect', desc: 'monitoring & visibility' },
+      { id: 'respond', name: 'Respond', desc: 'plans, notification, partners' },
+      { id: 'recover', name: 'Recover', desc: 'backups, continuity, proof' }
+    ];
+    const Q = (f, text, help, opts) => ({ f, text, help, options: opts.map((label, i) => ({ label, points: 3 - i })) });
+    this.QUESTIONS = [
+      Q('govern', 'Who owns cybersecurity at the executive level?', 'Not who runs IT — who is accountable for security decisions.', ['A named security executive (CISO or vCISO) reporting to leadership; the board is briefed at least quarterly', 'Our IT leader owns it alongside operations', 'Our MSP or IT vendor handles it', 'No one specifically']),
+      Q('govern', 'Do you have a current, approved set of security policies aligned to {FW}?', '', ['Complete set, approved by leadership, reviewed annually, staff attest', 'Mostly written; review is irregular', 'A few documents', 'None']),
+      Q('govern', 'How is cyber risk tracked and reported to leadership?', '', ['A risk register reviewed by leadership, tied to owners and action items', 'An informal list someone maintains', 'Discussed after incidents', 'Not tracked']),
+      Q('govern', 'Do your IT providers and vendors have documented security responsibilities — and are they reviewed?', 'Your MSP, cloud providers, software vendors.', ['Contracts define responsibilities; critical vendors assessed annually', 'Contracts exist; reviews are ad hoc', 'We rely on vendor reputation', 'Not defined']),
+      Q('identify', 'Do you know where {DATA} lives — every system, file share, and SaaS application?', '', ['Documented data inventory and data-flow diagram, kept current', 'Mostly known, partly documented', 'Roughly', 'No']),
+      Q('identify', 'How current is your inventory of hardware, software, and cloud services?', '', ['Automated, current, includes SaaS and shadow IT discovery', 'Maintained, mostly current', 'Partial', 'None']),
+      Q('identify', 'When was your last formal risk assessment against {FW}?', '', ['Within 12 months, independent, findings tracked to closure', 'Within 12 months, internal', 'More than a year ago', 'Never']),
+      Q('identify', 'How are vulnerabilities found and fixed?', '', ['Continuous scanning; critical findings fixed within days; tracked', 'Periodic scans; fixed eventually', 'Occasional scans', 'No scanning']),
+      Q('protect', 'How broadly is multi-factor authentication enforced?', 'Email, VPN, remote access, admin consoles, cloud apps.', ['Everywhere, including admin and remote access; phishing-resistant for privileged users', 'Most systems', 'Some systems', 'Not enforced']),
+      Q('protect', 'Who can access {DATA}, and how often is that reviewed?', '', ['Role-based least privilege; access reviewed quarterly and documented', 'Role-based; reviewed annually', 'Broad access; occasional cleanup', 'Almost everyone can reach it']),
+      Q('protect', 'Is {DATA} encrypted at rest and in transit — including laptops, mobile devices, and backups?', '', ['Everywhere, with managed keys and verification', 'Most places', 'Some places', 'Unknown']),
+      Q('protect', 'How are your people trained to recognize attacks?', '', ['Onboarding plus annual training, monthly phishing simulations, results tracked', 'Annual training', 'Occasional reminder emails', 'No program']),
+      Q('detect', 'Are security logs centralized and monitored?', '', ['24/7 SOC with alerting and tuned detections', 'Logs centralized, reviewed during business hours', 'Logs exist on individual systems, not reviewed', 'No central logging']),
+      Q('detect', 'What protects and watches your endpoints and servers?', '', ['EDR/MDR on every endpoint and server, monitored 24/7', 'EDR deployed, monitored business hours', 'Traditional antivirus only', 'Inconsistent coverage']),
+      Q('detect', 'How would you know if an attacker were inside your environment right now?', '', ['Tested detections for lateral movement, privilege abuse, and data exfiltration', 'Alerts on known malware', 'A user would report something odd', 'We would not know']),
+      Q('detect', 'Is activity in your cloud and SaaS platforms (M365 / Google Workspace, admin consoles) monitored?', '', ['Monitored with alerts on risky sign-ins and configuration changes', 'Some logs reviewed periodically', 'Default settings only', 'Not monitored']),
+      Q('respond', 'Do you have a written incident response plan — and has it been tested?', '', ['Tested in a tabletop within 12 months; roles and contacts named', 'Written, never tested', 'Draft or informal', 'None']),
+      Q('respond', 'Do you know your breach-notification obligations under {FW}, and have a process to meet them?', '', ['Documented timelines, counsel engaged, notification templates ready', 'We know them roughly', 'We would look them up during an incident', 'Unaware']),
+      Q('respond', 'Who would you call in the first hour of a serious incident?', '', ['Retained IR/forensics partner named in the plan and approved by our insurer', 'We know who we would call', 'We would search for help', 'No one identified']),
+      Q('respond', 'Cyber insurance — do you meet the requirements on your application, with evidence?', '', ['Requirements mapped to controls, evidence ready', 'Insured, mostly compliant', "Insured, haven't checked", 'No coverage, or not sure']),
+      Q('recover', 'Could you restore from backups after ransomware?', '', ['Immutable and offline copies; restores tested quarterly; RTO/RPO documented', 'Restores tested annually', 'Backups exist; restores rarely tested', 'Not confident']),
+      Q('recover', 'Is there a business continuity plan for a multi-day outage of {SYSTEMS}?', '', ['Documented and exercised; critical processes prioritized', 'Documented, never exercised', 'Informal', 'None']),
+      Q('recover', 'After an incident or near miss, what happens?', '', ['Formal review; root cause feeds the risk register and control changes', 'Informal debrief', 'Fix it and move on', 'Nothing']),
+      Q('recover', 'Could you prove all of this to {AUD} this month?', 'Policies, logs, access reviews, training records, test results.', ['Yes — evidence organized in a GRC platform', 'Yes, scattered across tools and inboxes', 'Some, with significant effort', 'No'])
+    ];
+    this.VERTICALS = {
+      cmmc: { id: 'cmmc', label: 'Defense / CMMC', audience: 'defense contractors and subcontractors', framework: 'CMMC Level 2 / NIST SP 800-171', data: 'Controlled Unclassified Information (CUI)', systems: 'your CUI environment', auditor: 'a C3PAO assessor or your prime contractor', headline: 'Your contracts now depend on a certification you do not hold yet.', subhead: 'CMMC Level 2 is a condition of award, and primes are asking subcontractors for proof today. Find out how ready you are in seven minutes — then get the playbook that sequences the work.', problemHead: 'The DoD supply chain is being sorted into contractors who can prove it and contractors who cannot.', problemBody: 'NIST SP 800-171 has 110 controls. Most contractors have implemented some, documented few, and can evidence fewer. Assessors do not grade on intent.', pressures: [{ who: 'Your prime contractor', ask: 'Send us your SPRS score and your CMMC status.', why: 'Flow-down clauses make your readiness their problem — and they will pick the subcontractor who can answer.' }, { who: 'The assessor', ask: 'Show me the evidence for each control.', why: 'A System Security Plan and POA&M are the minimum. Evidence for every practice is what passes.' }, { who: 'Your leadership', ask: 'What happens to revenue if we are not certified in time?', why: 'Certification timelines run months. Waiting for the solicitation to require it is too late.' }], stakesHead: 'Lose eligibility and you lose the contract — no appeal.', stakes: ['A recompete requires CMMC Level 2 and you are not ready for the assessment', 'Your prime replaces you with a certified subcontractor to protect their own award', 'An inaccurate SPRS self-attestation becomes a False Claims Act exposure', 'CUI spills across an unscoped environment and the incident is reportable to DoD'], deadlineLabel: 'Contract or assessment deadline', sensitiveLabel: 'We handle CUI or FCI', playbook: 'The CMMC Level 2 Readiness Playbook', guideProof: 'Cyber AB Registered Practitioner Organization; CMMC readiness through C3PAO prep; Microsoft GCC High enclave design', readiness: 'CMMC Readiness, Remediation, Management & Auditing (+ GCC High Certified Enclave)' },
+      hipaa: { id: 'hipaa', label: 'Healthcare / HIPAA', audience: 'healthcare organizations and business associates', framework: 'the HIPAA Security Rule', data: 'protected health information (PHI)', systems: 'your EHR and clinical systems', auditor: 'OCR or a covered-entity partner', headline: 'Ransomware in a clinical setting is not an IT problem. It is a patient-safety problem.', subhead: 'HIPAA requires a documented, current security risk assessment — and your partners are asking for proof of one. See where you stand in seven minutes and get the playbook that closes the gaps.', problemHead: 'Healthcare is the most-attacked sector, and the Security Rule assumes you already know your risks.', problemBody: 'Most organizations have a privacy officer and a policy binder. Fewer have a current risk analysis, tested backups, and evidence that safeguards actually operate.', pressures: [{ who: 'Covered entities & partners', ask: 'Sign the BAA — and show us your risk assessment.', why: 'Partners are pushing accountability down the chain. A missing risk analysis ends the conversation.' }, { who: 'OCR', ask: 'Where is your risk analysis and risk management plan?', why: 'It is the most-cited failure in enforcement actions, and settlements follow.' }, { who: 'Your board & insurer', ask: 'Could we keep treating patients through an outage?', why: 'Downtime procedures and recovery are now underwriting questions.' }], stakesHead: 'A breach here costs more than money.', stakes: ['Clinical downtime while systems are rebuilt from backups nobody tested', 'OCR investigation finds no current risk analysis — the most common finding', 'A partner terminates the BAA over an unanswered security questionnaire', 'Patient notification letters, credit monitoring, and the headline that follows'], deadlineLabel: 'Next risk assessment, audit, or partner deadline', sensitiveLabel: 'We create, store, or transmit PHI', playbook: 'The HIPAA Security Risk Assessment Playbook', guideProof: 'HITRUST-certified firm; annual HIPAA Security Risk Assessments and healthcare compliance programs', readiness: 'HIPAA Security Risk Assessment & Healthcare Compliance Program' },
+      soc2: { id: 'soc2', label: 'SaaS & Technology / SOC 2', audience: 'SaaS and technology companies', framework: 'SOC 2 Type II', data: 'customer data', systems: 'your production platform', auditor: 'your enterprise customers and their auditors', headline: 'Every enterprise deal now ends with the same question: where is your SOC 2?', subhead: 'Security questionnaires stall your pipeline and a missing report loses the deal. See how close you are to audit-ready in seven minutes — and get the playbook that gets you there.', problemHead: 'You sell trust. Buyers now want it audited.', problemBody: 'Procurement teams treat a SOC 2 Type II as table stakes. Without it, every deal becomes a custom security review your engineers have to staff.', pressures: [{ who: 'Enterprise buyers', ask: 'Send your SOC 2 report or complete this 300-question review.', why: 'Deals slip a quarter while engineers answer questionnaires from memory.' }, { who: 'Your auditor', ask: 'Show operating evidence across the observation period.', why: 'Type II means proving controls ran for months, not that they exist today.' }, { who: 'Your investors', ask: 'What is our exposure if a customer is breached through us?', why: 'Security posture is now diligence — for the round and for the exit.' }], stakesHead: 'Every quarter without a report is a quarter of deals that stall.', stakes: ['A flagship prospect chooses the competitor with a report on file', 'A customer breach through your platform triggers contractual penalties', 'Engineering loses weeks to bespoke questionnaires instead of shipping', 'Your observation period cannot start until controls are actually in place'], deadlineLabel: 'Customer deadline for a SOC 2 report', sensitiveLabel: 'We process customer data in production', playbook: 'The SOC 2 Type II Readiness Playbook', guideProof: 'SOC 2 Type II holders ourselves; readiness through audit with 100% client audit success', readiness: 'SOC 2 Readiness, Remediation, Management & Auditing' },
+      finance: { id: 'finance', label: 'Financial services', audience: 'banks, credit unions, and financial firms', framework: 'GLBA, FFIEC, and state regulator expectations', data: 'customer financial data', systems: 'your core and payment systems', auditor: 'your examiners and cyber insurer', headline: 'Examiners, insurers, and attackers are all reading your controls. Are you?', subhead: 'Financial firms are among the most-targeted organizations anywhere, and the regulatory bar rises every cycle. See where your program stands in seven minutes and get the playbook that closes the gaps.', problemHead: 'The exam is not the risk. The exam is where the risk becomes visible.', problemBody: 'Regulators expect a documented, risk-based program with board oversight. Insurers expect the controls on the application to actually exist. Attackers expect neither.', pressures: [{ who: 'Examiners', ask: 'Show us board oversight, risk assessment, and vendor management.', why: 'Findings become matters requiring attention — and follow you into the next cycle.' }, { who: 'Your cyber insurer', ask: 'Confirm MFA, EDR, immutable backups, and tested response.', why: 'Misstatements are grounds to deny a claim when you need it most.' }, { who: 'Your customers', ask: 'Is my money — and my data — safe with you?', why: 'One incident, one disclosure, and trust built over decades erodes.' }], stakesHead: 'Findings compound. So does exposure.', stakes: ['An exam finding on information security that recurs next cycle', 'A denied cyber claim because a control on the application was not in place', 'Business-email compromise redirecting a wire your controls should have caught', 'A vendor breach that becomes your notification obligation'], deadlineLabel: 'Next exam or audit date', sensitiveLabel: 'We hold customer financial or account data', playbook: 'The Financial Services Security Program Playbook', guideProof: 'Penetration testing, risk assessments, and examiner-ready governance programs for banks and credit unions', readiness: 'Risk Assessment + vCISO Services (examiner-ready program)' },
+      legal: { id: 'legal', label: 'Legal', audience: 'law firms and legal service providers', framework: "client security requirements and ABA guidance", data: 'privileged client information', systems: 'your document and practice management systems', auditor: "your clients' outside-counsel guideline reviews", headline: 'Your clients trust you with privilege. Their security questionnaires are asking whether they should.', subhead: 'Firms hold client funds, privileged communications, and case strategy — and corporate clients now audit their outside counsel. See where you stand in seven minutes and get the playbook that answers them.', problemHead: 'Confidentiality is an ethical duty. Proving it is now a business requirement.', problemBody: 'Outside-counsel guidelines increasingly require MFA, encryption, incident response plans, and independent assessments. Firms that cannot evidence them are quietly removed from panels.', pressures: [{ who: 'Corporate clients', ask: 'Complete our outside-counsel security requirements.', why: 'Panel status depends on the answers — and on evidence, not assurances.' }, { who: 'Your malpractice & cyber insurers', ask: 'Which controls are actually in place?', why: 'Premiums and coverage now depend on MFA, backups, and tested response.' }, { who: 'Your partners', ask: 'What is our exposure if a matter is compromised?', why: 'A breach of privileged material is a client crisis and a bar issue at once.' }], stakesHead: 'Panel removal happens quietly. Breaches do not.', stakes: ['A key client drops the firm from its panel after a failed security review', 'Wire-fraud loss of client funds through business-email compromise', 'Ransomware locking case files days before a filing deadline', 'A privileged-data breach that becomes a public disclosure and a bar complaint'], deadlineLabel: 'Client security review or renewal date', sensitiveLabel: 'We hold privileged client data or client funds', playbook: 'The Law Firm Security & Client Assurance Playbook', guideProof: 'Security programs built around client confidentiality, outside-counsel requirements, and ransomware resilience', readiness: 'Security Maturity Level Assessment + vCISO Services' },
+      manufacturing: { id: 'manufacturing', label: 'Manufacturing', audience: 'manufacturers and industrial companies', framework: 'NIST CSF and customer flow-down requirements', data: 'production systems and customer intellectual property', systems: 'your production and ERP systems', auditor: "your customers' supplier security reviews", headline: 'One ransomware event stops the line. Your customers know it — and they are asking.', subhead: 'Manufacturing is now the most-targeted sector for ransomware, and large customers push security requirements down their supply chain. See where you stand in seven minutes and get the playbook that keeps the line running.', problemHead: 'Uptime was always the priority. Now uptime depends on security.', problemBody: 'Flat networks, aging OT, and remote vendor access make plants easy targets. Customers are responding with supplier security reviews you have to pass to keep the order.', pressures: [{ who: 'Your customers', ask: 'Complete our supplier cybersecurity assessment.', why: 'Preferred-supplier status now includes security posture — and flow-down clauses make it contractual.' }, { who: 'Your insurer', ask: 'How segmented is OT from IT? How fast can you restore?', why: 'Business-interruption coverage depends on the answers.' }, { who: 'Your plant leadership', ask: 'How long would we be down?', why: 'Most manufacturers hit by ransomware lose more than a week of production.' }], stakesHead: 'Downtime is the cost everyone understands.', stakes: ['Days of lost production while systems are rebuilt', 'A customer suspends orders pending a security review you cannot pass', 'Theft of designs and pricing that surfaces at a competitor', 'A vendor remote-access account becomes the entry point to the plant floor'], deadlineLabel: 'Customer review or contract deadline', sensitiveLabel: 'We hold customer IP or handle CUI for defense customers', playbook: 'The Manufacturing Cyber Resilience Playbook', guideProof: 'Ransomware recovery case work with US manufacturers; CIS Benchmark Hardening; DFARS/CMMC for defense suppliers', readiness: 'Security Maturity Level Assessment + CIS Benchmark Hardening' },
+      nonprofit: { id: 'nonprofit', label: 'Not-for-profit', audience: 'nonprofits and mission-driven organizations', framework: 'donor-data protection and grant compliance requirements', data: 'donor, member, and beneficiary data', systems: 'your donor and program systems', auditor: 'your board, funders, and auditors', headline: 'Your mission runs on trust. Donor data is where that trust is tested.', subhead: 'Nonprofits hold payment data, personal information about vulnerable people, and grant obligations — with a fraction of the security staff. See where you stand in seven minutes and get a playbook sized for your organization.', problemHead: 'Attackers know nonprofits are under-resourced. So do your funders.', problemBody: 'Grant agreements and payment processors increasingly require documented security controls. The gap between what is promised and what is in place is where organizations get hurt.', pressures: [{ who: 'Funders & grantors', ask: 'Confirm your data-protection controls as a condition of the grant.', why: 'Compliance clauses in grant agreements are audited — and revocable.' }, { who: 'Your board', ask: 'What is our exposure, and what are we doing about it?', why: 'Fiduciary duty now includes cyber oversight.' }, { who: 'Your donors & beneficiaries', ask: 'Is my information safe with you?', why: 'A breach of vulnerable people\'s data is a mission failure, not just a technical one.' }], stakesHead: 'The cost of a breach is measured in trust you cannot rebuild quickly.', stakes: ['Business-email compromise redirecting a major gift or grant payment', 'A grant clawback after a compliance audit finds missing controls', 'Exposure of beneficiary data that puts vulnerable people at risk', 'Weeks of program disruption with no recovery plan'], deadlineLabel: 'Grant, audit, or board deadline', sensitiveLabel: 'We store donor payment data or sensitive beneficiary information', playbook: 'The Nonprofit Security Essentials Playbook', guideProof: 'Right-sized programs, policy workshops, and vCISO leadership for resource-constrained organizations', readiness: 'Risk Assessment + Cybersecurity Policy Workshops' }
+    };
+    this.RECS = {
+      govern: { gap: ['Put someone accountable for security', 'Without a named owner there is no program — only tasks. Establish executive ownership (a CISO or vCISO), approve a policy set aligned to {FW}, and stand up a risk register leadership actually reviews.', 'vCISO Services + Cybersecurity Policy Workshops'], watch: ['Formalize the governance rhythm', 'Ownership exists; cadence does not. Institute quarterly leadership risk reviews, annual policy attestation, and vendor reviews on a schedule.', 'vCISO Services'], strong: ['Governance is working', 'Keep the cadence and record it — board minutes and review logs are exactly what {AUD} asks for first.', 'Managed Compliance (Manage phase)'] },
+      identify: { gap: ['Find out what you have and where {DATA} lives', 'You cannot protect what you cannot see. Build asset and data inventories, map data flows, and run an independent risk assessment against {FW}.', 'Risk Assessment + Vulnerability Assessment'], watch: ['Close inventory and scanning gaps', 'Move to continuous vulnerability scanning with remediation SLAs and keep the data inventory current as systems change.', 'Vulnerability Assessments + Risk Assessment'], strong: ['Visibility is solid', 'Refresh the risk assessment annually and after major changes; it anchors everything else.', 'Annual Risk Assessment (Manage phase)'] },
+      protect: { gap: ['Harden the fundamentals', 'MFA everywhere, least-privilege access to {DATA}, encryption on every device, and trained people close most of the attack surface — and are the first things {AUD} checks.', 'CIS Benchmark Hardening + Security Awareness Program'], watch: ['Extend protection to the edges', 'Cover remaining systems with MFA, run quarterly access reviews, and add phishing simulation with tracked results.', 'CIS Benchmark Hardening'], strong: ['Protective controls are mature', 'Maintain them with configuration baselines and periodic access recertification.', 'Managed Cybersecurity (Manage phase)'] },
+      detect: { gap: ['Get eyes on your environment', 'Without central logging and 24/7 monitoring an intruder has weeks, not minutes. Deploy EDR on every endpoint and route logs to a monitored SOC.', 'SOC-as-a-Service + EDR/MDR deployment'], watch: ['Tune and extend detection', 'Move from business-hours review to 24/7 alerting, add cloud/SaaS admin monitoring, and test detections against real attacker behavior.', 'SOC-as-a-Service + Penetration Testing'], strong: ['Detection is a strength', 'Validate it annually with a penetration test and keep detections tuned to your environment.', 'Penetration Testing (annual)'] },
+      respond: { gap: ['Prepare to respond before you must', 'Write and tabletop an incident response plan, document {FW} notification timelines, and retain an IR and forensics partner your insurer accepts.', 'Incident Response Planning + 24/7 IR & Recovery'], watch: ['Test the plan', 'Run a tabletop this quarter, name the first-hour contacts, and map cyber-insurance requirements to evidence.', 'Incident Response Planning'], strong: ['Response readiness is documented', 'Exercise annually and after significant changes; keep the retainer current.', '24/7 IR & Recovery retainer'] },
+      recover: { gap: ['Make sure you can come back', 'Immutable backups with tested restores and an exercised continuity plan are the difference between a bad week and a closed business — and the evidence to prove it is what {AUD} wants to see.', 'Cyber Recovery Planning + GRC platform onboarding'], watch: ['Prove recovery works', 'Test restores quarterly, exercise the continuity plan, and centralize evidence so proof takes hours, not weeks.', 'Cyber Recovery Planning + GRC platform'], strong: ['Recovery and proof are in place', 'Keep the test cadence and use the evidence pack proactively with customers, insurers, and auditors.', 'Managed Compliance (Manage phase)'] }
+    };
+    this.TIERS = [
+      { n: 1, name: 'Exposed', min: 0, summary: 'Security depends on individual effort, not a program.', detail: 'Few controls are documented, tested, or provable. A serious incident or a formal review would expose the gaps quickly — but the highest-impact fixes are also the most straightforward.' },
+      { n: 2, name: 'Developing', min: 40, summary: 'Controls exist; coverage and evidence are inconsistent.', detail: 'You have the beginnings of a program. The gaps are in consistency, testing, and the ability to prove controls operate — which is exactly what {AUD} will probe.' },
+      { n: 3, name: 'Established', min: 60, summary: 'A defined program exists and mostly operates.', detail: 'Policies, controls, and monitoring are largely in place. Closing the remaining gaps and organizing evidence would make the program defensible against {FW}.' },
+      { n: 4, name: 'Resilient', min: 80, summary: 'Documented, tested, and provable on request.', detail: 'Your program operates at the level {AUD} expects. The work now is sustaining it — and using it as a competitive advantage.' }
+    ];
+    this.DEFAULT_BRANDS = {
+      inovo: { id: 'inovo', name: 'Inovo Infosec', legalName: 'Inovois InfoSec, Inc', tagline: 'Three Dimensional Cybersecurity', logo: 'assets/inovo-logo.png', primary: '#C5131B', phone: '800-598-4008 + option 1', incidentPhone: '800-598-4008 + option 1', email: 'sales@inovois.com', address: '515 S Flower Street, 18th Floor, Los Angeles, CA 90071', ctaDirectLabel: 'Book a discovery call', ctaDirectUrl: 'https://calendly.com/PLACEHOLDER-inovo/discovery', reportCtaLabel: 'Book my advisory session', poweredBy: false },
+      partner: { id: 'partner', name: 'MSP Security Services', legalName: 'MSP Security Services, LLC', tagline: 'Managed IT & Security', logo: '', primary: '#0F4C81', phone: '(555) 010-0100', incidentPhone: '(555) 010-0199', email: 'security@mspsecurityservices.example', address: '[PLACEHOLDER — partner address]', ctaDirectLabel: 'Book a security review', ctaDirectUrl: 'https://calendly.com/PLACEHOLDER-partner/review', reportCtaLabel: 'Book my advisory session', poweredBy: true }
+    };
+    this.DEFAULT_QUAL = { hotScoreBelow: 60, hotDays: 90, warmScoreBelow: 75, warmDays: 180 };
+    this.FW_CHIPS = ['CMMC', 'NIST 800-171', 'HIPAA', 'SOC 2', 'ISO 27001', 'PCI DSS', 'GLBA / FFIEC', 'State privacy law', 'None yet'];
+    const load = (k, d) => { try { const v = localStorage.getItem(this.LS + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } };
+    this.state = {
+      view: 'page', brandId: 'inovo', stage: 'landing', qIndex: 0, showValidation: false,
+      answers: load('client-answers', {}),
+      lead: this.emptyLead(), leadErr: {},
+      leads: load('client-leads', []), selectedLeadId: null,
+      brands: load('brands', this.DEFAULT_BRANDS), brandVertical: load('client-vertical', { inovo: 'cmmc', partner: 'hipaa' }),
+      qual: load('client-qual', this.DEFAULT_QUAL)
+    };
+  }
+  emptyLead() { return { name: '', email: '', company: '', role: '', phone: '', employees: '', provider: '', frameworks: [], deadline: '', timeline: '', budget: '', sensitive: '' }; }
+  save(k, v) { try { localStorage.setItem(this.LS + k, JSON.stringify(v)); } catch (e) {} }
+  track(ev, data) { console.log('[analytics]', ev, data || {}); }
+  brand() { const b = { ...this.DEFAULT_BRANDS[this.state.brandId], ...(this.state.brands[this.state.brandId] || {}) }; if (b.id === 'partner' && b.reportCtaLabel === 'Book my security review') b.reportCtaLabel = 'Book my advisory session'; return b; }
+  vertical() { return this.VERTICALS[this.state.brandVertical[this.state.brandId]] || this.VERTICALS.cmmc; }
+  tok(s, v) { return String(s).replace(/\{FW\}/g, v.framework).replace(/\{DATA\}/g, v.data).replace(/\{AUD\}/g, v.auditor).replace(/\{SYSTEMS\}/g, v.systems); }
+  compute(answers, v) {
+    const fns = this.FNS.map(f => {
+      const qs = this.QUESTIONS.map((q, i) => ({ q, i })).filter(x => x.q.f === f.id);
+      const raw = qs.reduce((a, x) => a + (answers[x.i] != null ? x.q.options[answers[x.i]].points : 0), 0);
+      const pct = Math.round(raw / (qs.length * 3) * 100);
+      return { id: f.id, name: f.name, desc: f.desc, raw, max: qs.length * 3, pct, status: pct < 50 ? 'gap' : pct < 75 ? 'watch' : 'strong' };
+    });
+    const score = Math.round(fns.reduce((a, f) => a + f.pct, 0) / fns.length);
+    const tier = [...this.TIERS].sort((a, b) => b.min - a.min).find(t => score >= t.min) || this.TIERS[0];
+    const recs = fns.map(f => { const r = this.RECS[f.id][f.status]; return { fn: f.name, fnId: f.id, status: f.status, title: this.tok(r[0], v), body: this.tok(r[1], v), service: r[2], exposure: 100 - f.pct }; }).sort((a, b) => b.exposure - a.exposure);
+    recs.push({ fn: 'Program', fnId: 'program', status: 'program', title: `Readiness path for ${v.framework}`, body: `The gaps above are closed fastest inside a single program run against ${v.framework}: assess formally, remediate in priority order, and manage the evidence so ${v.auditor} gets a straight answer.`, service: v.readiness, exposure: -1 });
+    return { fns, score, tier: { n: tier.n, name: tier.name, summary: this.tok(tier.summary, v), detail: this.tok(tier.detail, v) }, recs };
+  }
+  urgencyDays(lead) {
+    if (lead.deadline) { const d = Math.ceil((new Date(lead.deadline).getTime() - Date.now()) / 86400000); if (!isNaN(d)) return d; }
+    return { 'Within 30 days': 30, 'Within 90 days': 90, 'Within 180 days': 180 }[lead.timeline] ?? 9999;
+  }
+  qualify(score, lead, qual) {
+    const q = qual || this.state.qual; const days = this.urgencyDays(lead); const reasons = [];
+    const budgetOk = lead.budget !== 'Influence only';
+    if (score < q.hotScoreBelow) reasons.push(`score ${score} < ${q.hotScoreBelow}`);
+    if (days <= q.hotDays) reasons.push(`urgency ${days}d ≤ ${q.hotDays}d`);
+    if (!budgetOk) reasons.push('no budget authority');
+    if (score < q.hotScoreBelow && days <= q.hotDays && budgetOk) return { tier: 'HOT', reasons };
+    if (score < q.warmScoreBelow || days <= q.warmDays) { if (score < q.warmScoreBelow && !(score < q.hotScoreBelow)) reasons.push(`score ${score} < ${q.warmScoreBelow}`); if (days <= q.warmDays && !(days <= q.hotDays)) reasons.push(`urgency ${days}d ≤ ${q.warmDays}d`); return { tier: 'WARM', reasons }; }
+    return { tier: 'NURTURE', reasons: [`score ${score}`, days < 9999 ? `urgency ${days}d` : 'no timeline'] };
+  }
+  buildPayload(lead, answers, brand, v) {
+    const r = this.compute(answers, v); const qual = this.qualify(r.score, lead);
+    const routing = brand.id === 'partner' ? { model: 'co-delivery', notify: [brand.email, 'sales@inovois.com'], owner: brand.name } : { model: 'direct', notify: ['sales@inovois.com'], owner: 'Inovo Infosec' };
+    return {
+      type: 'client_assessment_lead', submittedAt: new Date().toISOString(),
+      brand: { id: brand.id, name: brand.name }, vertical: { id: v.id, label: v.label, framework: v.framework }, source: { host: brand.id === 'partner' ? 'security.partnerdomain.example' : 'assess.inovois.com', utm: null, assessmentVersion: 'client-1.0' },
+      contact: { name: lead.name, email: lead.email, company: lead.company, role: lead.role, phone: lead.phone },
+      qualification: { tier: qual.tier, reasons: qual.reasons, urgencyDays: this.urgencyDays(lead), employees: lead.employees, currentProvider: lead.provider, frameworksRequired: lead.frameworks, deadline: lead.deadline || null, timeline: lead.timeline, budgetAuthority: lead.budget, handlesSensitiveData: lead.sensitive },
+      assessment: { score: r.score, tier: r.tier.name, functions: r.fns.map(f => ({ id: f.id, name: f.name, points: f.raw, max: f.max, pct: f.pct, status: f.status })), answers: this.QUESTIONS.map((q, i) => ({ id: 'q' + (i + 1), function: q.f, question: this.tok(q.text, v), answer: answers[i] != null ? q.options[answers[i]].label : null, points: answers[i] != null ? q.options[answers[i]].points : null })) },
+      recommendations: r.recs.map(x => ({ function: x.fnId, status: x.status, title: x.title, service: x.service })),
+      playbook: { title: v.playbook, status: 'stubbed' },
+      routing, integrations: { hubspot: { status: 'stubbed', lifecyclestage: qual.tier === 'HOT' ? 'salesqualifiedlead' : 'lead' }, zapier: { status: 'stubbed' } }
+    };
+  }
+  startAssessment() { this.track('client_assessment_started', { brand: this.state.brandId, vertical: this.vertical().id }); const a = this.state.answers; let i = 0; while (i < this.QUESTIONS.length && a[i] != null) i++; this.setState({ stage: 'questions', qIndex: Math.min(i, this.QUESTIONS.length - 1), showValidation: false }); this.top(); }
+  top() { try { window.scrollTo(0, 0); } catch (e) {} }
+  selectOption(idx) { const answers = { ...this.state.answers, [this.state.qIndex]: idx }; this.save('client-answers', answers); this.setState({ answers, showValidation: false }); }
+  nextQuestion() { const { qIndex, answers } = this.state; if (answers[qIndex] == null) { this.setState({ showValidation: true }); return; } if (qIndex + 1 >= this.QUESTIONS.length) { this.setState({ stage: 'preview' }); this.top(); return; } this.setState({ qIndex: qIndex + 1, showValidation: false }); }
+  validate(l) {
+    const e = {}; const personal = /@(gmail|yahoo|hotmail|outlook|live|aol|icloud|proton|protonmail)\./i;
+    if (!l.name.trim()) e.name = 'Required'; if (!l.company.trim()) e.company = 'Required';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(l.email)) e.email = 'Enter a valid email'; else if (personal.test(l.email)) e.email = 'Please use your work email';
+    ['role', 'employees', 'provider', 'timeline', 'budget', 'sensitive'].forEach(k => { if (!l[k]) e[k] = 'Required'; });
+    if (l.phone.replace(/\D/g, '').length < 10) e.phone = 'Enter a phone number with area code';
+    return e;
+  }
+  submitLead() {
+    const leadErr = this.validate(this.state.lead); if (Object.keys(leadErr).length) { this.setState({ leadErr }); return; }
+    const payload = this.buildPayload(this.state.lead, this.state.answers, this.brand(), this.vertical());
+    const rec = { id: 'C' + Date.now(), payload, lead: this.state.lead }; const leads = [rec, ...this.state.leads]; this.save('client-leads', leads);
+    this.track('client_lead_captured', { score: payload.assessment.score, qualification: payload.qualification.tier, routing: payload.routing.notify });
+    console.log('[stub] HubSpot contact + Zapier hook would fire with', payload);
+    this.setState({ leads, leadErr: {}, stage: 'report', selectedLeadId: rec.id }); this.top();
+  }
+  seedDemoLead() {
+    const answers = {}; this.QUESTIONS.forEach((q, i) => { answers[i] = [2, 3, 1, 2, 3, 2, 1, 3][i % 8]; });
+    const d = new Date(); d.setDate(d.getDate() + 45);
+    const lead = { name: 'Marcus Ellery', email: 'mellery@harborline-aero.com', company: 'Harborline Aerospace Components', role: 'CIO', phone: '(555) 322-8810', employees: '200–499', provider: 'Our MSP / IT provider', frameworks: ['CMMC', 'NIST 800-171'], deadline: d.toISOString().slice(0, 10), timeline: 'Within 90 days', budget: 'I own the budget', sensitive: 'Yes' };
+    const payload = this.buildPayload(lead, answers, this.brand(), this.vertical()); const rec = { id: 'C' + Date.now(), payload, lead };
+    const leads = [rec, ...this.state.leads]; this.save('client-leads', leads); this.setState({ leads, selectedLeadId: rec.id });
+  }
+  renderVals() {
+    const S = this.state; const braw = this.brand(); const v = this.vertical();
+    const brand = { ...braw, hasLogo: !!braw.logo, noLogo: !braw.logo, initials: (braw.name || 'P').split(/\s+/).map(w => w[0]).join('').slice(0, 3).toUpperCase() };
+    const active = '#3b82f6', idle = 'transparent';
+    const q = this.QUESTIONS[S.qIndex]; const fn = this.FNS.find(f => f.id === q.f); const sel = S.answers[S.qIndex];
+    const options = q.options.map((o, i) => ({ label: this.tok(o.label, v), selected: sel === i, select: () => this.selectOption(i), border: sel === i ? brand.primary : '#dcdce0', bg: sel === i ? brand.primary + '12' : '#fff', dotBorder: sel === i ? brand.primary : '#b5b5bb', dotBg: sel === i ? brand.primary : '#fff' }));
+    const r = this.compute(S.answers, v);
+    const statusMeta = { gap: ['Gap', '#b3121a'], watch: ['Watch', '#b7791f'], strong: ['Strong', '#1f7a3a'], program: ['Program', '#333'] };
+    const fnScores = r.fns.map(f => ({ ...f, statusLabel: statusMeta[f.status][0], statusBg: statusMeta[f.status][1] }));
+    const recs = r.recs.map((x, i) => ({ ...x, n: i + 1, statusLabel: statusMeta[x.status][0], statusBg: statusMeta[x.status][1] }));
+    const sorted = [...r.fns].sort((a, b) => b.pct - a.pct);
+    const tierScale = this.TIERS.map(t => ({ name: t.name, bg: t.n <= r.tier.n ? brand.primary : '#e3e3e6', color: t.n === r.tier.n ? brand.primary : '#999' }));
+    const onLeadChange = (e) => { const { name, value } = e.target; this.setState(s => ({ lead: { ...s.lead, [name]: value }, leadErr: { ...s.leadErr, [name]: undefined } })); };
+    const fwChips = this.FW_CHIPS.map(label => { const on = S.lead.frameworks.includes(label); return { label, border: on ? brand.primary : '#cfcfd3', bg: on ? brand.primary : '#fff', color: on ? '#fff' : '#333', toggle: () => this.setState(s => ({ lead: { ...s.lead, frameworks: on ? s.lead.frameworks.filter(x => x !== label) : [...s.lead.frameworks, label] } })) }; });
+    const qualMeta = { HOT: '#b3121a', WARM: '#b7791f', NURTURE: '#4a5568' };
+    const selected = S.leads.find(l => l.id === S.selectedLeadId) || S.leads[0] || null;
+    const leadRows = S.leads.map(l => { const p = l.payload; const qq = this.qualify(p.assessment.score, l.lead); return { id: l.id, name: p.contact.name, company: p.contact.company, role: p.contact.role, qual: qq.tier, qualBg: qualMeta[qq.tier], reasons: qq.reasons.join(' · '), meta: `Score ${p.assessment.score} · ${p.assessment.tier} · ${p.vertical.label} · ${p.qualification.employees} employees · via ${p.brand.name}`, when: new Date(p.submittedAt).toLocaleString(), bg: selected && selected.id === l.id ? '#f0f4ff' : '#fff', select: () => this.setState({ selectedLeadId: l.id }) }; });
+    const routingNote = braw.id === 'partner' ? `Your report is shared with ${braw.name} and their security partner, Inovo Infosec, who co-deliver the program.` : 'Your report goes to Inovo Infosec\'s advisory team only.';
+    const gapCount = r.fns.filter(f => f.status !== 'strong').length;
+    return {
+      brand, partnerName: (S.brands.partner || this.DEFAULT_BRANDS.partner).name, vertical: v, verticalId: v.id, verticalOptions: Object.values(this.VERTICALS).map(x => ({ id: x.id, label: x.label })),
+      onVerticalChange: (e) => { const brandVertical = { ...S.brandVertical, [S.brandId]: e.target.value }; this.save('client-vertical', brandVertical); this.setState({ brandVertical }); },
+      is: { page: S.view === 'page', admin: S.view === 'admin' }, viewBg: { page: S.view === 'page' ? active : idle, admin: S.view === 'admin' ? active : idle },
+      brandBg: { inovo: S.brandId === 'inovo' ? '#C5131B' : idle, partner: S.brandId === 'partner' ? ((S.brands.partner || {}).primary || '#0F4C81') : idle },
+      go: { page: () => { this.setState({ view: 'page' }); this.top(); }, admin: () => { this.setState({ view: 'admin' }); this.top(); } },
+      setBrand: { inovo: () => this.setState({ brandId: 'inovo' }), partner: () => this.setState({ brandId: 'partner' }) },
+      trustLabel: braw.id === 'partner' && braw.poweredBy ? 'Program delivered with Inovo Infosec, which holds' : (braw.id === 'partner' ? 'Our security partner holds' : 'Inovo Infosec holds'),
+      guideHead: braw.id === 'partner' ? `${braw.name} keeps your systems running. Together with Inovo Infosec, we keep them defensible.` : 'You do not need to build a security department. You need one that has done this before.',
+      guideBody: braw.id === 'partner' ? `You already trust us with your IT. For ${v.framework}, we bring in Inovo Infosec — a CISO-led compliance and cybersecurity firm — so you get one unified program: we own operations, they own security governance, and there is no gap in between.` : `Inovo Infosec is a CISO-led compliance and cybersecurity firm serving ${v.audience}. We assess, build, and lead security programs against ${v.framework} — and we maintain our own SOC 2 Type II, HITRUST, ISO 27001, and ISO 9001 certifications, passed without exceptions.`,
+      stage: { landing: S.stage === 'landing', notLanding: S.stage !== 'landing', questions: S.stage === 'questions', preview: S.stage === 'preview', gate: S.stage === 'gate', report: S.stage === 'report' },
+      startAssessment: () => this.startAssessment(), backToTop: (e) => { if (e && e.preventDefault) e.preventDefault(); this.setState({ stage: 'landing', view: 'page' }); this.top(); },
+      q: { text: this.tok(q.text, v), help: this.tok(q.help, v), fn: fn.name, fnDesc: fn.desc }, qNum: S.qIndex + 1, qTotal: this.QUESTIONS.length, progressPct: Math.round(S.qIndex / this.QUESTIONS.length * 100), options, showValidation: S.showValidation,
+      isFirst: S.qIndex === 0, backOpacity: S.qIndex === 0 ? .4 : 1, nextLabel: S.qIndex + 1 >= this.QUESTIONS.length ? 'See my score' : 'Next →',
+      prevQuestion: () => { if (S.qIndex > 0) this.setState({ qIndex: S.qIndex - 1, showValidation: false }); }, nextQuestion: () => this.nextQuestion(),
+      score: r.score, tier: r.tier, ring: { dash: `${(r.score / 100 * 326.7).toFixed(1)} 326.7` }, fnScores, recs, tierScale, bestFn: sorted[0].name, worstFn: sorted[sorted.length - 1].name, gapCount: gapCount || 'no',
+      toGate: () => { this.setState({ stage: 'gate' }); this.top(); }, backToQuestions: () => this.setState({ stage: 'questions', qIndex: this.QUESTIONS.length - 1 }), backToPreview: () => this.setState({ stage: 'preview' }),
+      lead: S.lead, leadErr: S.leadErr, lb: Object.fromEntries(Object.keys(this.emptyLead()).map(k => [k, S.leadErr[k] ? '#b3121a' : '#cfcfd3'])), onLeadChange, fwChips, submitLead: () => this.submitLead(), routingNote,
+      retake: () => { this.save('client-answers', {}); this.setState({ answers: {}, qIndex: 0, stage: 'landing', lead: this.emptyLead(), leadErr: {} }); this.top(); },
+      downloadStub: () => alert(`Stub: in production this downloads "${v.playbook}" as a branded PDF personalized with the report.`),
+      leadCount: S.leads.length, noLeads: S.leads.length === 0, leadRows, selectedLabel: selected ? `— ${selected.id}` : '', payloadJson: selected ? JSON.stringify({ ...selected.payload, qualification: { ...selected.payload.qualification, ...this.qualify(selected.payload.assessment.score, selected.lead) } }, null, 2) : '// No lead selected.',
+      seedDemoLead: () => this.seedDemoLead(),
+      qual: S.qual, onQualChange: (e) => { const qual = { ...S.qual, [e.target.name]: Number(e.target.value) }; this.save('client-qual', qual); this.setState({ qual }); },
+      brandVerticalRows: ['inovo', 'partner'].map(id => { const b = { ...this.DEFAULT_BRANDS[id], ...(S.brands[id] || {}) }; return { id, name: b.name, verticalId: S.brandVertical[id], routing: id === 'partner' ? `Co-delivery → ${b.email} + sales@inovois.com` : 'Direct → sales@inovois.com' }; }),
+      onBrandVertical: (e) => { const brandVertical = { ...S.brandVertical, [e.target.name]: e.target.value }; this.save('client-vertical', brandVertical); this.setState({ brandVertical }); }
+    };
+  }
+}
+</script>
+</body>
+</html>
