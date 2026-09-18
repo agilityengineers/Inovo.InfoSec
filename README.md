@@ -40,8 +40,7 @@ refuses to start in production without it. With Postgres available:
 
 ```bash
 export DATABASE_URL=postgres://...
-npm run db:push     # create the tables
-npm run db:seed     # brands, verticals, scoring config, qualification rule
+npm run db:setup     # migrate, then seed
 ```
 
 ### Everyday commands
@@ -55,11 +54,17 @@ npm run db:seed     # brands, verticals, scoring config, qualification rule
 | `npm test` | Vitest — scoring, qualification, payloads, validation |
 | `npm run fidelity` | Diffs the built screens against the approved prototypes |
 | `npm run generate` | Regenerates `lib/data/` and `components/generated/` |
-| `npm run db:push` / `db:seed` | Schema and seed data |
+| `npm run db:setup` | `db:migrate` then `db:seed` — the normal path |
+| `npm run db:migrate` | Applies `db/migrations/*.sql` in order (production) |
+| `npm run db:seed` | Brands, verticals, scoring config, qualification rule |
+| `npm run db:push` | Diffs the schema straight into the database (dev only) |
+| `npm run db:generate` | Writes a new migration after a schema change |
 
 ---
 
 ## Deploying on Replit
+
+### First time
 
 1. **Import from GitHub.** In Replit, *Create Repl → Import from GitHub* and
    pick this repository. `.replit` and `replit.nix` are committed, so it opens
@@ -82,19 +87,64 @@ npm run db:seed     # brands, verticals, scoring config, qualification rule
    in the admin's integration log — until its key is present, so you can go live
    and connect them one at a time. `.env.example` lists all of them.
 
+   The app refuses to start in production without `ADMIN_SESSION_SECRET` and
+   `DATABASE_URL`, rather than falling back to something insecure.
+
 4. **Create the tables.** In the Shell:
 
    ```bash
-   npm run db:push && npm run db:seed
+   npm run db:setup
    ```
 
-5. **Run.** Press **Run**. The workspace serves on `$PORT`, which Replit
-   forwards to the webview.
+5. **Run.** Press **Run**, and check the workspace webview.
 
 6. **Deploy.** *Deploy → Autoscale*. The build and run commands are already in
-   `.replit` (`npm ci && npm run build`, then `npm run start`); the server binds
+   `.replit` (`npm ci && npm run build`, then `npm start`); the server binds
    `0.0.0.0:$PORT`, which is what Autoscale expects. Autoscale scales to zero
    between visits, which suits a lead-gen funnel.
+
+   Confirm that deployment secrets include the three admin values and
+   `DATABASE_URL` — Replit keeps deployment secrets separately from workspace
+   secrets, and a deployment missing them will not start.
+
+7. **Verify.** Open `https://<your-deployment>/api/health`:
+
+   ```json
+   {
+     "status": "ok",
+     "databaseConfigured": true,
+     "databaseReachable": true,
+     "seeded": true,
+     "tenants": [{ "slug": "inovo", "hostnames": ["assess.inovois.com"] }],
+     "servingSeedFallback": false,
+     "integrations": { "hubspot": false, "zapier": false, "email": false, "turnstile": false },
+     "adminConfigured": true
+   }
+   ```
+
+   It returns 503 with `"status": "degraded"` and the reason if the database is
+   configured but unreachable. `"seeded": false` means the tables exist but
+   `npm run db:seed` has not been run. `"servingSeedFallback": true` means the
+   public pages are rendering from compiled-in seed data because the database
+   is down — the site is up, but nothing is being persisted.
+
+   Then sign in at `/admin` and submit a test assessment end to end.
+
+### Subsequent deploys
+
+```bash
+git pull                 # or let Replit pull the repo
+npm run db:migrate       # only if db/migrations/ gained a file
+```
+
+Then **Deploy** again. Migrations are versioned files applied in order and safe
+to re-run, so `db:migrate` is a no-op when nothing has changed. They are
+deliberately *not* wired into the Autoscale build: a schema change should be a
+step you run and watch, not one that fires from a build that may run
+concurrently with the old version still serving.
+
+After a schema change, `npm run db:generate` writes the migration — commit it
+with the code.
 
 ### Mapping a custom domain per partner
 

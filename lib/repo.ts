@@ -58,6 +58,23 @@ function warnMemoryOnly(action: string) {
   }
 }
 
+/**
+ * Probes the database directly, with no seed fallback.
+ *
+ * The reads above deliberately hide an outage so the funnel keeps rendering —
+ * which would make a health check built on them report "ok" while Postgres is
+ * down. This is the one path that tells the truth.
+ */
+export async function pingDatabase(): Promise<{ ok: boolean; brands?: number; error?: string }> {
+  if (!hasDatabase()) return { ok: false, error: 'DATABASE_URL is not set' };
+  try {
+    const rows = await db().select({ id: schema.brands.id }).from(schema.brands);
+    return { ok: true, brands: rows.length };
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : String(error) };
+  }
+}
+
 // ------------------------------------------------------------------ brands
 
 function seedBrandList(): Brand[] {

@@ -19,7 +19,9 @@
     "fidelity": "node tools/fidelity-check.mjs",
     "generate:screens": "node tools/generate-screens.mjs",
     "generate:data": "node tools/extract-data.mjs",
-    "generate": "npm run generate:data && npm run generate:screens"
+    "generate": "npm run generate:data && npm run generate:screens",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "db:setup": "npm run db:migrate && npm run db:seed"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.1.6",

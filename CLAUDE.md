@@ -83,6 +83,22 @@ same pure functions, so the two agree.
 row in `assessments` and deactivates the previous one, so a lead scored last
 month can still be explained.
 
+**Production fails fast on missing configuration.** `instrumentation.ts` runs
+`validateEnv()` once at server start; a production deployment without
+`DATABASE_URL`, `ADMIN_SESSION_SECRET`, `ADMIN_EMAIL` or `ADMIN_PASSWORD`
+refuses to boot and names what is missing. The alternative — serving the public
+pages happily and only failing when a lead is submitted — loses leads silently.
+
+**Schema changes ship as versioned migrations.** `db/migrations/*.sql` is
+committed and applied in order by `npm run db:migrate`; `npm run db:generate`
+writes a new one after a schema edit. `db:push` remains for development only.
+Migrations are deliberately not wired into the Autoscale build — see `.replit`.
+
+**`/api/health` probes the database directly.** It deliberately does not use the
+ordinary reads, because those fall back to seed data and would report "ok"
+straight through an outage. It returns 503 with the reason instead, and
+`servingSeedFallback: true` to say the site is up but persisting nothing.
+
 **Reads fall back to seed data; writes do not.** If Postgres is unreachable, the
 public funnel still renders from `lib/data/` rather than 500-ing — every string
 it needs is compiled in. A lead that cannot be persisted fails loudly instead.

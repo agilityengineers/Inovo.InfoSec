@@ -1,4 +1,10 @@
-# Replit configuration. Import from GitHub → add secrets → Run → Deploy.
+# Replit configuration.
+#
+#   Import from GitHub → add a Postgres database → add secrets
+#   → `npm run db:setup` in the Shell → Run → Deploy (Autoscale)
+#
+# See README.md for the full walkthrough.
+
 run = "npm run dev"
 entrypoint = "app/page.tsx"
 modules = ["nodejs-20", "postgresql-16"]
@@ -11,13 +17,19 @@ channel = "stable-24_05"
 [env]
 NEXT_TELEMETRY_DISABLED = "1"
 
-# `npm run dev` binds to $PORT; Replit forwards 3000 to 80 in the workspace.
+# `next dev` binds 0.0.0.0 on $PORT; Replit forwards 3000 to the webview.
 [[ports]]
 localPort = 3000
 externalPort = 80
 
 [deployment]
-# Autoscale: stateless web service, scaled to zero when idle.
+# Autoscale: a stateless web service that scales to zero between visits, which
+# suits a lead-gen funnel. `npm start` binds 0.0.0.0 on the $PORT Replit sets.
+#
+# Migrations are NOT run here on purpose. Autoscale can start several instances
+# from one build, and a schema change belongs to a deliberate step you watch,
+# not to a build that may run concurrently. Run `npm run db:migrate` in the
+# Shell before deploying; it is versioned, ordered and safe to re-run.
 deploymentTarget = "autoscale"
 build = ["sh", "-c", "npm ci && npm run build"]
 run = ["sh", "-c", "npm run start"]
