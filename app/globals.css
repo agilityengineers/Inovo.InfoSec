@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Ported verbatim from the <helmet> block of the approved prototypes. The one
+ * change is the link colour: the prototype hardcodes Inovo's red, which would
+ * leak into a partner tenant, so it reads the runtime brand variable and falls
+ * back to exactly the prototype's value.
+ */
+body {
+  margin: 0;
+  background: #fff;
+  color: #111;
+  font-family: Figtree, 'Century Gothic', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--brand, #c5131b);
+}
+
+a:hover {
+  color: var(--brand-dark, #8f0d13);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+input,
+select,
+textarea,
+button {
+  font-family: inherit;
+}
+
+/*
+ * `style-hover` on the answer buttons in the approved markup. The prototype
+ * runtime never implemented it, so it is applied only to unselected options —
+ * a selected option keeps the brand border the reference shows.
+ */
+button[role='radio'][aria-checked='false']:hover {
+  border-color: #9a9aa0 !important;
+}
+
+/* Respect a reduced-motion preference for the progress bar transition. */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.01ms !important;
+  }
+}

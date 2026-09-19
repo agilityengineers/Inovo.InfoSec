@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+      # The screens are generated from the approved prototypes; this fails if
+      # they have drifted, or if someone edited the generated files by hand.
+      - name: Design fidelity
+        run: npm run fidelity
+
+      - name: Generated files are up to date
+        run: |
+          npm run generate
+          if ! git diff --quiet; then
+            echo "::error::Generated files are stale. Run 'npm run generate' and commit the result."
+            git diff --stat
+            exit 1
+          fi
+
+      - name: Build
+        run: npm run build
